@@ -5,10 +5,10 @@
     <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
       <div class="mb-8">
         <Heading :level="1" size="3xl" class="mb-2">
-          Article Archive
+          Car Inventory
         </Heading>
         <Text as="p" size="lg" color="muted">
-          Browse our collection of articles
+          Browse our available dealership cars
         </Text>
       </div>
       
@@ -26,7 +26,7 @@
       <!-- Empty State -->
       <div v-else class="text-center py-12">
         <Text as="p" size="lg" color="muted">
-          No articles found.
+          No cars found.
         </Text>
       </div>
       
@@ -54,19 +54,19 @@ const props = defineProps({
   navigationLinks: {
     type: Array,
     default: () => [
-      { name: 'Home', href: '/' },
-      { name: 'Articles', href: '/articles' },
-      { name: 'About', href: '/about' },
-      { name: 'Contact', href: '/contact' },
+      { name: 'Home', href: '#/' },
+      { name: 'Cars', href: '#/' },
+      { name: 'About', href: '#/' },
+      { name: 'Contact', href: '#/' },
     ],
   },
   footerQuickLinks: {
     type: Array,
     default: () => [
-      { name: 'Home', href: '/' },
-      { name: 'Articles', href: '/articles' },
-      { name: 'Categories', href: '/categories' },
-      { name: 'About', href: '/about' },
+      { name: 'Home', href: '#/' },
+      { name: 'Cars', href: '#/' },
+      { name: 'Inventory', href: '#/' },
+      { name: 'About', href: '#/' },
     ],
   },
   footerLegalLinks: {

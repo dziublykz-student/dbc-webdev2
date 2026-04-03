@@ -1,54 +1,54 @@
 [
-  {
-    "id": 1,
-    "brand": "BMW",
-    "model": "320d",
-    "year": 2019,
-    "price": 23950,
-    "mileage": 84200,
-    "fuelType": "Diesel",
-    "transmission": "Automatic",
-    "status": "Available",
-    "imageUrl": "https://images.unsplash.com/photo-1555215695-3004980ad54e",
-    "description": "Well-maintained BMW 320d with automatic transmission, efficient diesel engine, and premium interior."
-  },
-  {
-    "id": 2,
-    "brand": "Audi",
-    "model": "A3",
-    "year": 2018,
-    "price": 18900,
-    "mileage": 96750,
-    "fuelType": "Petrol",
-    "transmission": "Manual",
-    "status": "Available",
-    "imageUrl": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341",
-    "description": "Compact and reliable Audi A3, ideal for city and highway driving."
-  },
-  {
-    "id": 3,
-    "brand": "Mercedes-Benz",
-    "model": "C200",
-    "year": 2020,
-    "price": 31400,
-    "mileage": 55200,
-    "fuelType": "Petrol",
-    "transmission": "Automatic",
-    "status": "Sold",
-    "imageUrl": "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
-    "description": "Elegant Mercedes-Benz C200 with modern comfort features and smooth driving experience."
-  },
-  {
-    "id": 4,
-    "brand": "Volkswagen",
-    "model": "Golf",
-    "year": 2017,
-    "price": 14950,
-    "mileage": 118400,
-    "fuelType": "Diesel",
-    "transmission": "Manual",
-    "status": "Available",
-    "imageUrl": "https://images.unsplash.com/photo-1503376780353-7e6692767b70",
-    "description": "Practical Volkswagen Golf in good condition, economical and comfortable for everyday use."
-  }
+    {
+        "id": 1,
+        "brand": "BMW",
+        "model": "320d M Sport",
+        "year": 2019,
+        "price": 24950,
+        "mileage": 84200,
+        "fuelType": "Diesel",
+        "transmission": "Automatic",
+        "status": "Available",
+        "imageUrl": "https://images.unsplash.com/photo-1555215695-3004980ad54e",
+        "description": "Updated BMW 320d M Sport with premium trim and strong diesel performance."
+    },
+    {
+        "id": 2,
+        "brand": "Audi",
+        "model": "A3",
+        "year": 2018,
+        "price": 18900,
+        "mileage": 96750,
+        "fuelType": "Petrol",
+        "transmission": "Manual",
+        "status": "Available",
+        "imageUrl": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341",
+        "description": "Compact and reliable Audi A3, ideal for city and highway driving."
+    },
+    {
+        "id": 3,
+        "brand": "Mercedes-Benz",
+        "model": "C200",
+        "year": 2020,
+        "price": 31400,
+        "mileage": 55200,
+        "fuelType": "Petrol",
+        "transmission": "Automatic",
+        "status": "Sold",
+        "imageUrl": "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
+        "description": "Elegant Mercedes-Benz C200 with modern comfort features and smooth driving experience."
+    },
+    {
+        "id": 5,
+        "brand": "Ford",
+        "model": "Focus",
+        "year": 2021,
+        "price": 17950,
+        "mileage": 46200,
+        "fuelType": "Petrol",
+        "transmission": "Manual",
+        "status": "Available",
+        "imageUrl": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
+        "description": "Clean Ford Focus with low mileage and practical interior."
+    }
 ]

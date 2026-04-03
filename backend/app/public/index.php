@@ -43,6 +43,10 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cars', ['App\Controllers\CarController', 'getAll']);
     $r->addRoute('GET', '/cars/{id:\d+}', ['App\Controllers\CarController', 'get']);
 
+    $r->addRoute('POST', '/cars', ['App\Controllers\CarController', 'create']);
+    $r->addRoute('PUT', '/cars/{id:\d+}', ['App\Controllers\CarController', 'update']);
+    $r->addRoute('DELETE', '/cars/{id:\d+}', ['App\Controllers\CarController', 'delete']);
+
     $r->addRoute('POST', '/articles', ['App\Controllers\ArticleController', 'create']);
     $r->addRoute('PUT', '/articles/{id}', ['App\Controllers\ArticleController', 'update']);
     $r->addRoute('DELETE', '/articles/{id}', ['App\Controllers\ArticleController', 'delete']);

@@ -24,4 +24,19 @@ class CarService implements ICarService
     {
         return $this->carRepository->getById($id);
     }
+
+    public function create(array $data): Car
+    {
+        return $this->carRepository->create($data);
+    }
+
+    public function update(int $id, array $data): ?Car
+    {
+        return $this->carRepository->update($id, $data);
+    }
+
+    public function delete(int $id): bool
+    {
+        return $this->carRepository->delete($id);
+    }
 }

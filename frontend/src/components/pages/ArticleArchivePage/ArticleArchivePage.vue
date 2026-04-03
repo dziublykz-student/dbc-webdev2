@@ -1,16 +1,14 @@
 <template>
   <div>
-    <!-- Loading State -->
     <div v-if="loading" class="min-h-screen flex items-center justify-center">
       <div class="text-center">
         <div
           class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"
         ></div>
-        <p class="text-gray-600">Loading articles...</p>
+        <p class="text-gray-600">Loading cars...</p>
       </div>
     </div>
 
-    <!-- Error State -->
     <div
       v-else-if="error"
       class="min-h-screen flex items-center justify-center"
@@ -18,11 +16,11 @@
       <div class="text-center max-w-md">
         <div class="text-red-600 text-5xl mb-4">⚠️</div>
         <h2 class="text-2xl font-bold text-gray-900 mb-2">
-          Error Loading Articles
+          Error Loading Cars
         </h2>
         <p class="text-gray-600 mb-4">{{ error }}</p>
         <button
-          @click="fetchArticles"
+          @click="fetchCars"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Try Again
@@ -30,65 +28,68 @@
       </div>
     </div>
 
-    <!-- Article Archive Template -->
     <ArticleArchive
       v-else
-      :articles="articles"
-      @article-click="handleArticleClick"
+      :articles="mappedCars"
+      @article-click="handleCarClick"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import ArticleArchive from "../../templates/ArticleArchive/ArticleArchive.vue";
 import { get } from "../../../utils/api.js";
 
-const articles = ref([]);
+const cars = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-/**
- * Fetch articles from the API
- */
-const fetchArticles = async () => {
+const mappedCars = computed(() =>
+  cars.value.map((car) => ({
+    id: car.id,
+    title: `${car.brand} ${car.model}`,
+    category: car.fuelType,
+    content: car.description,
+    year: car.year,
+    transmission: car.transmission,
+    mileage: `${car.mileage.toLocaleString()} km`,
+    status: car.status,
+    price: `€${Number(car.price).toLocaleString()}`,
+    imageUrl: car.imageUrl,
+  })),
+);
+
+const fetchCars = async () => {
   loading.value = true;
   error.value = null;
 
   try {
-    const response = await get("/articles");
+    const response = await get("/cars");
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch articles: ${response.status} ${response.statusText}`,
+        `Failed to fetch cars: ${response.status} ${response.statusText}`,
       );
     }
 
-    const data = await response.json();
-    articles.value = data;
+    const result = await response.json();
+    cars.value = Array.isArray(result) ? result : (result.data ?? []);
   } catch (err) {
-    console.error("Error fetching articles:", err);
+    console.error("Error fetching cars:", err);
     error.value =
-      err.message || "Failed to load articles. Please try again later.";
-    articles.value = [];
+      err.message || "Failed to load cars. Please try again later.";
+    cars.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-/**
- * Handle article click event
- * @param {number} articleId - The ID of the clicked article
- */
-const handleArticleClick = (articleId) => {
-  // Navigate to article detail page
-  // This can be implemented with Vue Router or your preferred routing solution
-  console.log("Article clicked:", articleId);
-  // Example: router.push(`/articles/${articleId}`);
+const handleCarClick = (carId) => {
+  window.location.hash = `#/cars/${carId}`;
 };
 
-// Fetch articles when component is mounted
 onMounted(() => {
-  fetchArticles();
+  fetchCars();
 });
 </script>

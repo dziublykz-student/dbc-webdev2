@@ -5,7 +5,7 @@
         <div class="flex items-center">
           <Heading :level="1" size="xl" class="text-blue-600">
             <a href="/" class="hover:text-blue-700 transition-colors">
-              Article Archive
+              DBC Auto
             </a>
           </Heading>
         </div>

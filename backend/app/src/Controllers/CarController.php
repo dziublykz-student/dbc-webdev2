@@ -40,4 +40,86 @@ class CarController extends Controller
             return $this->sendErrorResponse('Internal server error', 500);
         }
     }
+
+    public function create()
+    {
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+
+            if (!$this->isValidCarData($data)) {
+                return $this->sendErrorResponse('Invalid car data', 400);
+            }
+
+            $car = $this->carService->create($data);
+            return $this->sendSuccessResponse($car, 201);
+        } catch (\Exception $e) {
+            return $this->sendErrorResponse('Internal server error', 500);
+        }
+    }
+
+    public function update($vars = [])
+    {
+        try {
+            $id = (int)($vars['id'] ?? 0);
+            $data = json_decode(file_get_contents('php://input'), true);
+
+            if (!$this->isValidCarData($data)) {
+                return $this->sendErrorResponse('Invalid car data', 400);
+            }
+
+            $car = $this->carService->update($id, $data);
+
+            if (!$car) {
+                return $this->sendErrorResponse('Car not found', 404);
+            }
+
+            return $this->sendSuccessResponse($car);
+        } catch (\Exception $e) {
+            return $this->sendErrorResponse('Internal server error', 500);
+        }
+    }
+
+    public function delete($vars = [])
+    {
+        try {
+            $id = (int)($vars['id'] ?? 0);
+            $deleted = $this->carService->delete($id);
+
+            if (!$deleted) {
+                return $this->sendErrorResponse('Car not found', 404);
+            }
+
+            return $this->sendSuccessResponse(['message' => 'Car deleted successfully']);
+        } catch (\Exception $e) {
+            return $this->sendErrorResponse('Internal server error', 500);
+        }
+    }
+
+    private function isValidCarData(?array $data): bool
+    {
+        if (!$data) {
+            return false;
+        }
+
+        $requiredFields = [
+            'brand',
+            'model',
+            'year',
+            'price',
+            'mileage',
+            'fuelType',
+            'transmission',
+            'status',
+            'imageUrl',
+            'description',
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || $data[$field] === '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

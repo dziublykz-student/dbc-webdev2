@@ -5,10 +5,10 @@
         <!-- Brand section -->
         <div class="col-span-1 md:col-span-2">
           <Heading :level="3" size="lg" class="mb-4">
-            Article Archive
+            DBC Auto
           </Heading>
           <Text as="p" size="sm" color="muted" class="mb-4">
-            Your source for quality articles on technology, science, health, and more.
+            Browse quality dealership cars with clear details, pricing, and availability.
           </Text>
           <div class="flex space-x-4">
             <a 
