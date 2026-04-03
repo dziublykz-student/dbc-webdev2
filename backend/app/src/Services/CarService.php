@@ -15,9 +15,20 @@ class CarService implements ICarService
         $this->carRepository = new CarRepository();
     }
 
-    public function getAll(): array
+    public function getAll(array $filters = [], int $page = 1, int $limit = 10): array
     {
-        return $this->carRepository->getAll();
+        $total = $this->carRepository->countAll($filters);
+        $cars = $this->carRepository->getAll($filters, $page, $limit);
+
+        return [
+            'data' => $cars,
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'totalPages' => $limit > 0 ? (int) ceil($total / $limit) : 1,
+            ],
+        ];
     }
 
     public function getById(int $id): ?Car

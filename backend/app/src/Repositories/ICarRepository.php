@@ -9,7 +9,9 @@ interface ICarRepository
     /**
      * @return Car[]
      */
-    public function getAll(): array;
+    public function getAll(array $filters = [], int $page = 1, int $limit = 10): array;
+
+    public function countAll(array $filters = []): int;
 
     public function getById(int $id): ?Car;
 

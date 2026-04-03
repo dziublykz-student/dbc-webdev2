@@ -13,11 +13,20 @@ class CarRepository implements ICarRepository
         $this->dataFile = __DIR__ . '/../data/cars.json';
     }
 
-    public function getAll(): array
+    public function getAll(array $filters = [], int $page = 1, int $limit = 10): array
     {
-        $data = $this->readData();
+        $cars = $this->applyFilters($this->readData(), $filters);
 
-        return array_map(fn(array $car) => $this->mapToCar($car), $data);
+        $offset = max(0, ($page - 1) * $limit);
+        $cars = array_slice($cars, $offset, $limit);
+
+        return array_map(fn(array $car) => $this->mapToCar($car), $cars);
+    }
+
+    public function countAll(array $filters = []): int
+    {
+        $cars = $this->applyFilters($this->readData(), $filters);
+        return count($cars);
     }
 
     public function getById(int $id): ?Car
@@ -37,9 +46,7 @@ class CarRepository implements ICarRepository
     {
         $cars = $this->readData();
 
-        $newId = empty($cars)
-            ? 1
-            : max(array_column($cars, 'id')) + 1;
+        $newId = empty($cars) ? 1 : max(array_column($cars, 'id')) + 1;
 
         $newCar = [
             'id' => $newId,
@@ -104,6 +111,25 @@ class CarRepository implements ICarRepository
 
         $this->writeData($cars);
         return true;
+    }
+
+    private function applyFilters(array $cars, array $filters): array
+    {
+        return array_values(array_filter($cars, function (array $car) use ($filters) {
+            if (!empty($filters['brand']) && strcasecmp($car['brand'], $filters['brand']) !== 0) {
+                return false;
+            }
+
+            if (!empty($filters['fuelType']) && strcasecmp($car['fuelType'], $filters['fuelType']) !== 0) {
+                return false;
+            }
+
+            if (!empty($filters['status']) && strcasecmp($car['status'], $filters['status']) !== 0) {
+                return false;
+            }
+
+            return true;
+        }));
     }
 
     private function readData(): array

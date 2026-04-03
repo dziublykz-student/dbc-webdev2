@@ -19,7 +19,16 @@ class CarController extends Controller
     public function getAll()
     {
         try {
-            $cars = $this->carService->getAll();
+            $filters = [
+                'brand' => $_GET['brand'] ?? null,
+                'fuelType' => $_GET['fuelType'] ?? null,
+                'status' => $_GET['status'] ?? null,
+            ];
+
+            $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+            $limit = isset($_GET['limit']) ? max(1, (int)$_GET['limit']) : 10;
+
+            $cars = $this->carService->getAll($filters, $page, $limit);
             return $this->sendSuccessResponse($cars);
         } catch (\Exception $e) {
             return $this->sendErrorResponse('Internal server error', 500);
@@ -45,10 +54,10 @@ class CarController extends Controller
     public function create()
     {
         try {
-            $user = $this->requireAuth();
+            $user = $this->requireAdmin();
 
             if (!$user) {
-                return $this->sendErrorResponse('Unauthorized', 401);
+                return $this->sendErrorResponse('Forbidden: admin access required', 403);
             }
 
             $data = json_decode(file_get_contents('php://input'), true);
@@ -67,10 +76,10 @@ class CarController extends Controller
     public function update($vars = [])
     {
         try {
-            $user = $this->requireAuth();
+            $user = $this->requireAdmin();
 
             if (!$user) {
-                return $this->sendErrorResponse('Unauthorized', 401);
+                return $this->sendErrorResponse('Forbidden: admin access required', 403);
             }
 
             $id = (int)($vars['id'] ?? 0);
@@ -95,12 +104,12 @@ class CarController extends Controller
     public function delete($vars = [])
     {
         try {
-            $user = $this->requireAuth();
+            $user = $this->requireAdmin();
 
             if (!$user) {
-                return $this->sendErrorResponse('Unauthorized', 401);
+                return $this->sendErrorResponse('Forbidden: admin access required', 403);
             }
-            
+
             $id = (int)($vars['id'] ?? 0);
             $deleted = $this->carService->delete($id);
 
@@ -129,6 +138,21 @@ class CarController extends Controller
         }
 
         return (array) $decoded['data'];
+    }
+
+    private function requireAdmin(): ?array
+    {
+        $user = $this->requireAuth();
+
+        if (!$user) {
+            return null;
+        }
+
+        if (($user['role'] ?? '') !== 'admin') {
+            return null;
+        }
+
+        return $user;
     }
 
     private function isValidCarData(?array $data): bool

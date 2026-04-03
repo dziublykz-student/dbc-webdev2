@@ -8,6 +8,7 @@
         </div>
 
         <button
+          v-if="isAdmin"
           type="button"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           @click="
@@ -22,7 +23,15 @@
       </div>
 
       <div
-        v-if="showCreateForm"
+        v-if="!isAdmin"
+        class="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl p-4 mb-8"
+      >
+        You are logged in as <strong>{{ currentUser?.role || 'employee' }}</strong>.
+        You can view the admin inventory, but only admins can create, edit, or delete cars.
+      </div>
+
+      <div
+        v-if="showCreateForm && isAdmin"
         class="bg-white rounded-xl shadow-md p-6 mb-8"
       >
         <h2 class="text-xl font-semibold mb-4">
@@ -89,7 +98,7 @@
               <th class="text-left px-4 py-3">Year</th>
               <th class="text-left px-4 py-3">Price</th>
               <th class="text-left px-4 py-3">Status</th>
-              <th class="text-left px-4 py-3">Actions</th>
+              <th v-if="isAdmin" class="text-left px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -104,7 +113,8 @@
               <td class="px-4 py-3">{{ car.year }}</td>
               <td class="px-4 py-3">€{{ Number(car.price).toLocaleString() }}</td>
               <td class="px-4 py-3">{{ car.status }}</td>
-              <td class="px-4 py-3">
+
+              <td v-if="isAdmin" class="px-4 py-3">
                 <button
                   type="button"
                   class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors mr-2"
@@ -141,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { get } from '../../../utils/api.js'
 
 const cars = ref([])
@@ -154,6 +164,12 @@ const globalError = ref('')
 const globalSuccess = ref('')
 const editingCarId = ref(null)
 const isEditing = ref(false)
+
+const currentUser = ref(
+  JSON.parse(localStorage.getItem('user') || 'null')
+)
+
+const isAdmin = computed(() => currentUser.value?.role === 'admin')
 
 const form = ref({
   brand: '',
@@ -241,6 +257,8 @@ const validateForm = () => {
 }
 
 const startEdit = (car) => {
+  if (!isAdmin.value) return
+
   formError.value = ''
   formSuccess.value = ''
   globalError.value = ''
@@ -264,6 +282,8 @@ const startEdit = (car) => {
 }
 
 const saveCar = async () => {
+  if (!isAdmin.value) return
+
   formError.value = ''
   formSuccess.value = ''
   globalError.value = ''
@@ -308,6 +328,11 @@ const saveCar = async () => {
       if (response.status === 401) {
         throw new Error('Unauthorized. Please log in again.')
       }
+
+      if (response.status === 403) {
+        throw new Error('Forbidden. Admin role required.')
+      }
+
       throw new Error(`Failed to save car: ${response.status} ${response.statusText}`)
     }
 
@@ -325,6 +350,8 @@ const saveCar = async () => {
 }
 
 const deleteCar = async (carId) => {
+  if (!isAdmin.value) return
+
   formError.value = ''
   formSuccess.value = ''
   globalError.value = ''
@@ -345,6 +372,11 @@ const deleteCar = async (carId) => {
       if (response.status === 401) {
         throw new Error('Unauthorized. Please log in again.')
       }
+
+      if (response.status === 403) {
+        throw new Error('Forbidden. Admin role required.')
+      }
+
       throw new Error(`Failed to delete car: ${response.status} ${response.statusText}`)
     }
 

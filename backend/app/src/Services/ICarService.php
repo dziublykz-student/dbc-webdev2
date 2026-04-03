@@ -7,9 +7,12 @@ use App\Models\Car;
 interface ICarService
 {
     /**
-     * @return Car[]
+     * @return array{
+     *   data: Car[],
+     *   pagination: array
+     * }
      */
-    public function getAll(): array;
+    public function getAll(array $filters = [], int $page = 1, int $limit = 10): array;
 
     public function getById(int $id): ?Car;
 
