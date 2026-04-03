@@ -50,6 +50,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/articles', ['App\Controllers\ArticleController', 'create']);
     $r->addRoute('PUT', '/articles/{id}', ['App\Controllers\ArticleController', 'update']);
     $r->addRoute('DELETE', '/articles/{id}', ['App\Controllers\ArticleController', 'delete']);
+
+    $r->addRoute('POST', '/auth/login', ['App\Controllers\AuthController', 'login']);
+    $r->addRoute('GET', '/auth/me', ['App\Controllers\AuthController', 'me']);
 });
 
 

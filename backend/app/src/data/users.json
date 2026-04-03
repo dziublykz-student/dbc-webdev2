@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Admin User",
+    "email": "admin@dbcauto.nl",
+    "password": "$2y$12$Y1RnWiyIcQZbaOmolcRCS.MUouIuQDXzSSJcxZBBn.QoYoVuYlP.O",
+    "role": "admin"
+  },
+  {
+    "id": 2,
+    "name": "Employee User",
+    "email": "employee@dbcauto.nl",
+    "password": "$2y$12$Y1RnWiyIcQZbaOmolcRCS.MUouIuQDXzSSJcxZBBn.QoYoVuYlP.O",
+    "role": "employee"
+  }
+]

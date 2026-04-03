@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Services\ICarService;
 use App\Services\CarService;
 use App\Framework\Controller;
+use App\Helpers\JwtHelper;
 
 class CarController extends Controller
 {
@@ -44,6 +45,12 @@ class CarController extends Controller
     public function create()
     {
         try {
+            $user = $this->requireAuth();
+
+            if (!$user) {
+                return $this->sendErrorResponse('Unauthorized', 401);
+            }
+
             $data = json_decode(file_get_contents('php://input'), true);
 
             if (!$this->isValidCarData($data)) {
@@ -60,6 +67,12 @@ class CarController extends Controller
     public function update($vars = [])
     {
         try {
+            $user = $this->requireAuth();
+
+            if (!$user) {
+                return $this->sendErrorResponse('Unauthorized', 401);
+            }
+
             $id = (int)($vars['id'] ?? 0);
             $data = json_decode(file_get_contents('php://input'), true);
 
@@ -82,6 +95,12 @@ class CarController extends Controller
     public function delete($vars = [])
     {
         try {
+            $user = $this->requireAuth();
+
+            if (!$user) {
+                return $this->sendErrorResponse('Unauthorized', 401);
+            }
+            
             $id = (int)($vars['id'] ?? 0);
             $deleted = $this->carService->delete($id);
 
@@ -93,6 +112,23 @@ class CarController extends Controller
         } catch (\Exception $e) {
             return $this->sendErrorResponse('Internal server error', 500);
         }
+    }
+
+    private function requireAuth(): ?array
+    {
+        $token = JwtHelper::getBearerToken();
+
+        if (!$token) {
+            return null;
+        }
+
+        $decoded = JwtHelper::validateToken($token);
+
+        if (!$decoded || !isset($decoded['data'])) {
+            return null;
+        }
+
+        return (array) $decoded['data'];
     }
 
     private function isValidCarData(?array $data): bool

@@ -50,5 +50,44 @@
         "status": "Available",
         "imageUrl": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
         "description": "Clean Ford Focus with low mileage and practical interior."
+    },
+    {
+        "id": 6,
+        "brand": "Audi",
+        "model": "A3",
+        "year": 2024,
+        "price": 12350,
+        "mileage": 12,
+        "fuelType": "fuel",
+        "transmission": "auto",
+        "status": "Available",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Audi_A3_8Y_Sedan_IMG_5936.jpg/330px-Audi_A3_8Y_Sedan_IMG_5936.jpg",
+        "description": "Reliable Audi A3 with low mileage"
+    },
+    {
+        "id": 7,
+        "brand": "fgqwr",
+        "model": "rqwegte",
+        "year": 24342,
+        "price": 15,
+        "mileage": 2362356,
+        "fuelType": "grgqet",
+        "transmission": "tegq",
+        "status": "Available",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Audi_A3_8Y_Sedan_IMG_5936.jpg/330px-Audi_A3_8Y_Sedan_IMG_5936.jpg",
+        "description": "wte"
+    },
+    {
+        "id": 8,
+        "brand": "Rollce-royce",
+        "model": "Ghost",
+        "year": 2027,
+        "price": 5000,
+        "mileage": 1,
+        "fuelType": "Gas",
+        "transmission": "Automatic",
+        "status": "Available",
+        "imageUrl": "https://s1.cdn.autoevolution.com/images/news/2026-rolls-royce-ghost-makes-rendering-debut-in-realistic-digital-illustrations-240920_1.jpg",
+        "description": "Vlad zbc"
     }
 ]
