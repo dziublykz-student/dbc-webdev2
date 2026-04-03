@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col bg-gray-50">
-    <Header :navigation-links="navigationLinks" />
-    
+    <Header :navigation-links="computedNavigationLinks" />
+
     <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
       <div class="mb-8">
         <Heading :level="1" size="3xl" class="mb-2">
@@ -11,10 +11,12 @@
           Browse our available dealership cars
         </Text>
       </div>
-      
-      
-      <!-- Article Grid -->
-      <div v-if="articles && articles.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Car Grid -->
+      <div
+        v-if="articles && articles.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
         <ArticleCard
           v-for="article in articles"
           :key="article.id"
@@ -22,17 +24,16 @@
           @click="handleArticleClick"
         />
       </div>
-      
+
       <!-- Empty State -->
       <div v-else class="text-center py-12">
         <Text as="p" size="lg" color="muted">
           No cars found.
         </Text>
       </div>
-      
     </main>
-    
-    <Footer 
+
+    <Footer
       :quick-links="footerQuickLinks"
       :legal-links="footerLegalLinks"
     />
@@ -40,6 +41,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import Header from '../../organisms/Header/Header.vue';
 import Footer from '../../organisms/Footer/Footer.vue';
 import ArticleCard from '../../organisms/ArticleCard/ArticleCard.vue';
@@ -56,8 +58,6 @@ const props = defineProps({
     default: () => [
       { name: 'Home', href: '#/' },
       { name: 'Cars', href: '#/' },
-      { name: 'About', href: '#/' },
-      { name: 'Contact', href: '#/' },
     ],
   },
   footerQuickLinks: {
@@ -88,6 +88,28 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['article-click']);
+
+const isLoggedIn = computed(() => !!localStorage.getItem('token'));
+
+const computedNavigationLinks = computed(() => {
+  const baseLinks = [
+    { name: 'Home', href: '#/' },
+    { name: 'Cars', href: '#/' },
+  ];
+
+  if (isLoggedIn.value) {
+    return [
+      ...baseLinks,
+      { name: 'Admin', href: '#/admin/cars' },
+      { name: 'Logout', href: '#/logout' },
+    ];
+  }
+
+  return [
+    ...baseLinks,
+    { name: 'Login', href: '#/login' },
+  ];
+});
 
 const handleArticleClick = (articleId) => {
   emit('article-click', articleId);

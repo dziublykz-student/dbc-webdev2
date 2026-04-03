@@ -14,6 +14,7 @@
             showCreateForm = !showCreateForm;
             formError = '';
             formSuccess = '';
+            if (!showCreateForm) resetForm();
           "
         >
           {{ showCreateForm ? 'Close Form' : 'Add New Car' }}
@@ -25,7 +26,7 @@
         class="bg-white rounded-xl shadow-md p-6 mb-8"
       >
         <h2 class="text-xl font-semibold mb-4">
-            {{ isEditing ? 'Edit Car' : 'Create New Car' }}
+          {{ isEditing ? 'Edit Car' : 'Create New Car' }}
         </h2>
 
         <p v-if="formError" class="mb-4 text-red-600 font-medium">
@@ -62,6 +63,14 @@
         </form>
       </div>
 
+      <p v-if="globalSuccess" class="mb-4 text-green-600 font-medium">
+        {{ globalSuccess }}
+      </p>
+
+      <p v-if="globalError" class="mb-4 text-red-600 font-medium">
+        {{ globalError }}
+      </p>
+
       <div v-if="loading" class="text-center py-12 text-gray-600">
         Loading admin cars...
       </div>
@@ -97,19 +106,19 @@
               <td class="px-4 py-3">{{ car.status }}</td>
               <td class="px-4 py-3">
                 <button
-                    type="button"
-                    class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors mr-2"
-                    @click="startEdit(car)"
+                  type="button"
+                  class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors mr-2"
+                  @click="startEdit(car)"
                 >
-                    Edit
+                  Edit
                 </button>
 
                 <button
-                    type="button"
-                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                    @click="deleteCar(car.id)"
+                  type="button"
+                  class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                  @click="deleteCar(car.id)"
                 >
-                    Delete
+                  Delete
                 </button>
               </td>
             </tr>
@@ -117,8 +126,15 @@
         </table>
       </div>
 
-      <div class="mt-6">
+      <div class="mt-6 flex gap-4">
         <a href="#/" class="text-blue-600 hover:underline">← Back to Inventory</a>
+        <button
+          type="button"
+          class="text-red-600 hover:underline"
+          @click="logout"
+        >
+          Logout
+        </button>
       </div>
     </div>
   </div>
@@ -126,16 +142,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { get, post, del } from '../../../utils/api.js'
+import { get } from '../../../utils/api.js'
 
 const cars = ref([])
 const loading = ref(true)
 const error = ref(null)
 const showCreateForm = ref(false)
-
 const formError = ref('')
 const formSuccess = ref('')
-
+const globalError = ref('')
+const globalSuccess = ref('')
 const editingCarId = ref(null)
 const isEditing = ref(false)
 
@@ -151,6 +167,15 @@ const form = ref({
   imageUrl: '',
   description: '',
 })
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token')
+
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  }
+}
 
 const fetchCars = async () => {
   loading.value = true
@@ -218,6 +243,8 @@ const validateForm = () => {
 const startEdit = (car) => {
   formError.value = ''
   formSuccess.value = ''
+  globalError.value = ''
+  globalSuccess.value = ''
   showCreateForm.value = true
   isEditing.value = true
   editingCarId.value = car.id
@@ -239,6 +266,8 @@ const startEdit = (car) => {
 const saveCar = async () => {
   formError.value = ''
   formSuccess.value = ''
+  globalError.value = ''
+  globalSuccess.value = ''
 
   if (!validateForm()) {
     formError.value = 'Please fill in all fields before saving the car.'
@@ -264,20 +293,25 @@ const saveCar = async () => {
     if (isEditing.value && editingCarId.value !== null) {
       response = await fetch(`http://localhost/cars/${editingCarId.value}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(payload),
       })
     } else {
-      response = await post('/cars', payload)
+      response = await fetch('http://localhost/cars', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      })
     }
 
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in again.')
+      }
       throw new Error(`Failed to save car: ${response.status} ${response.statusText}`)
     }
 
-    formSuccess.value = isEditing.value
+    globalSuccess.value = isEditing.value
       ? 'Car updated successfully.'
       : 'Car created successfully.'
 
@@ -293,6 +327,8 @@ const saveCar = async () => {
 const deleteCar = async (carId) => {
   formError.value = ''
   formSuccess.value = ''
+  globalError.value = ''
+  globalSuccess.value = ''
 
   const confirmed = window.confirm('Are you sure you want to delete this car?')
   if (!confirmed) {
@@ -300,18 +336,30 @@ const deleteCar = async (carId) => {
   }
 
   try {
-    const response = await del(`/cars/${carId}`)
+    const response = await fetch(`http://localhost/cars/${carId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    })
 
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in again.')
+      }
       throw new Error(`Failed to delete car: ${response.status} ${response.statusText}`)
     }
 
-    formSuccess.value = 'Car deleted successfully.'
+    globalSuccess.value = 'Car deleted successfully.'
     await fetchCars()
   } catch (err) {
     console.error('Error deleting car:', err)
-    formError.value = err.message || 'Failed to delete car.'
+    globalError.value = err.message || 'Failed to delete car.'
   }
+}
+
+const logout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  window.location.hash = '#/login'
 }
 
 onMounted(() => {
