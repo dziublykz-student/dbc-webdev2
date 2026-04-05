@@ -53,6 +53,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     $r->addRoute('POST', '/auth/login', ['App\Controllers\AuthController', 'login']);
     $r->addRoute('GET', '/auth/me', ['App\Controllers\AuthController', 'me']);
+
+    $r->addRoute('GET', '/inquiries', ['App\Controllers\InquiryController', 'getAll']);
+    $r->addRoute('POST', '/inquiries', ['App\Controllers\InquiryController', 'create']);
 });
 
 
