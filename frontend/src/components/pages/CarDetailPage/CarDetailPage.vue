@@ -96,7 +96,7 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+      <div class="bg-white rounded-xl shadow-md p-6">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">
           Interested in this car?
         </h2>
@@ -142,49 +142,6 @@
           </button>
         </form>
       </div>
-
-      <div
-        v-if="lastInquiryId"
-        class="bg-white rounded-xl shadow-md p-6"
-      >
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">
-          Continue this conversation
-        </h2>
-        <p class="text-gray-600 mb-4">
-          You already sent an inquiry for this car. You can send a follow-up message here.
-        </p>
-
-        <p v-if="followUpError" class="mb-4 text-red-600 font-medium">
-          {{ followUpError }}
-        </p>
-
-        <p v-if="followUpSuccess" class="mb-4 text-green-600 font-medium">
-          {{ followUpSuccess }}
-        </p>
-
-        <form @submit.prevent="submitFollowUp" class="space-y-4">
-          <input
-            v-model="followUpEmail"
-            type="email"
-            placeholder="Use the same email as before"
-            class="w-full border rounded-lg px-4 py-2"
-          />
-
-          <textarea
-            v-model="followUpMessage"
-            placeholder="Write your follow-up message"
-            class="w-full border rounded-lg px-4 py-2"
-            rows="5"
-          ></textarea>
-
-          <button
-            type="submit"
-            class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors"
-          >
-            Send Follow-up
-          </button>
-        </form>
-      </div>
     </div>
   </div>
 </template>
@@ -196,12 +153,8 @@ import { get, post } from '../../../utils/api.js'
 const car = ref(null)
 const loading = ref(true)
 const error = ref(null)
-
 const formError = ref('')
 const formSuccess = ref('')
-
-const followUpError = ref('')
-const followUpSuccess = ref('')
 
 const inquiryForm = ref({
   name: '',
@@ -209,38 +162,10 @@ const inquiryForm = ref({
   message: '',
 })
 
-const lastInquiryId = ref(null)
-const followUpEmail = ref('')
-const followUpMessage = ref('')
-
 const getCarIdFromHash = () => {
   const hash = window.location.hash
   const parts = hash.split('/')
   return parts[2]
-}
-
-const getStorageKey = () => {
-  return `carInquiry_${getCarIdFromHash()}`
-}
-
-const loadStoredInquiry = () => {
-  const raw = localStorage.getItem(getStorageKey())
-  if (!raw) return
-
-  try {
-    const data = JSON.parse(raw)
-    lastInquiryId.value = data.inquiryId ?? null
-    followUpEmail.value = data.email ?? ''
-  } catch {
-    lastInquiryId.value = null
-  }
-}
-
-const saveStoredInquiry = (inquiryId, email) => {
-  localStorage.setItem(
-    getStorageKey(),
-    JSON.stringify({ inquiryId, email })
-  )
 }
 
 const fetchCar = async () => {
@@ -273,14 +198,6 @@ const validateInquiryForm = () => {
   return true
 }
 
-const resetInquiryForm = () => {
-  inquiryForm.value = {
-    name: '',
-    email: '',
-    message: '',
-  }
-}
-
 const submitInquiry = async () => {
   formError.value = ''
   formSuccess.value = ''
@@ -305,52 +222,20 @@ const submitInquiry = async () => {
     const result = await response.json()
     const inquiry = result.data ?? result
 
-    lastInquiryId.value = inquiry.id
-    followUpEmail.value = inquiryForm.value.email
-    saveStoredInquiry(inquiry.id, inquiryForm.value.email)
-
     formSuccess.value = 'Your inquiry has been sent successfully.'
-    resetInquiryForm()
+
+    const encodedEmail = encodeURIComponent(inquiryForm.value.email)
+    const conversationHash = `#/inquiries/${inquiry.id}?email=${encodedEmail}`
+
+    localStorage.setItem('lastVisitorConversation', conversationHash)
+    window.location.hash = conversationHash
   } catch (err) {
     console.error('Error sending inquiry:', err)
     formError.value = err.message || 'Failed to send inquiry.'
   }
 }
 
-const submitFollowUp = async () => {
-  followUpError.value = ''
-  followUpSuccess.value = ''
-
-  if (!lastInquiryId.value) {
-    followUpError.value = 'No inquiry found to continue.'
-    return
-  }
-
-  if (!followUpEmail.value.trim() || !followUpMessage.value.trim()) {
-    followUpError.value = 'Please fill in both email and follow-up message.'
-    return
-  }
-
-  try {
-    const response = await post(`/inquiries/${lastInquiryId.value}/messages`, {
-      email: followUpEmail.value,
-      message: followUpMessage.value,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to send follow-up: ${response.status} ${response.statusText}`)
-    }
-
-    followUpSuccess.value = 'Your follow-up has been sent successfully.'
-    followUpMessage.value = ''
-  } catch (err) {
-    console.error('Error sending follow-up:', err)
-    followUpError.value = err.message || 'Failed to send follow-up.'
-  }
-}
-
 onMounted(() => {
   fetchCar()
-  loadStoredInquiry()
 })
 </script>

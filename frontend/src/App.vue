@@ -5,6 +5,8 @@ import CarDetailPage from './components/pages/CarDetailPage/CarDetailPage.vue'
 import AdminCarsPage from './components/pages/AdminCarsPage/AdminCarsPage.vue'
 import LoginPage from './components/pages/LoginPage/LoginPage.vue'
 import AdminInquiriesPage from './components/pages/AdminInquiriesPage/AdminInquiriesPage.vue'
+import InquiryConversationPage from './components/pages/InquiryConversationPage/InquiryConversationPage.vue'
+import FindInquiryPage from './components/pages/FindInquiryPage/FindInquiryPage.vue'
 
 const currentHash = ref(window.location.hash || '#/')
 const authToken = ref(localStorage.getItem('token'))
@@ -29,6 +31,12 @@ const updateHash = () => {
   }
 }
 
+const isInquiryConversationPage = computed(() =>
+  currentHash.value.startsWith('#/inquiries/')
+)
+
+const isFindInquiryPage = computed(() => currentHash.value === '#/find-inquiry')
+
 onMounted(() => {
   window.addEventListener('hashchange', updateHash)
   window.addEventListener('focus', refreshAuth)
@@ -52,6 +60,8 @@ const isAdminInquiriesPage = computed(() => currentHash.value === '#/admin/inqui
   <AdminCarsPage v-else-if="isAdminCarsPage && canAccessAdmin" />
   <LoginPage v-else-if="isAdminCarsPage && !canAccessAdmin" />
   <AdminInquiriesPage v-else-if="isAdminInquiriesPage && canAccessAdmin" />
+  <FindInquiryPage v-else-if="isFindInquiryPage" />
+  <InquiryConversationPage v-else-if="isInquiryConversationPage" />
   <CarDetailPage v-else-if="isCarDetailPage" />
   <CarInventoryPage v-else :key="authToken || 'guest'" />
 </template>

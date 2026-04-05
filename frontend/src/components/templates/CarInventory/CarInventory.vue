@@ -64,6 +64,7 @@ const computedNavigationLinks = computed(() => {
     return [
       ...baseLinks,
       { name: 'Admin', href: '#/admin/cars' },
+      { name: 'Find Inquiry', href: '#/find-inquiry' },
       { name: 'Logout', href: '#/logout' },
     ];
   }
@@ -71,6 +72,7 @@ const computedNavigationLinks = computed(() => {
   return [
     ...baseLinks,
     { name: 'Login', href: '#/login' },
+    { name: 'Find Inquiry', href: '#/find-inquiry' },
   ];
 });
 
