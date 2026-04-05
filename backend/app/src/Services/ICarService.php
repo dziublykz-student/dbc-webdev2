@@ -21,4 +21,6 @@ interface ICarService
     public function update(int $id, array $data): ?Car;
 
     public function delete(int $id): bool;
+
+    public function isValidCarData(?array $data): bool;
 }

@@ -62,7 +62,7 @@ class CarController extends Controller
 
             $data = json_decode(file_get_contents('php://input'), true);
 
-            if (!$this->isValidCarData($data)) {
+            if (!$this->carService->isValidCarData($data)) {
                 return $this->sendErrorResponse('Invalid car data', 400);
             }
 
@@ -85,7 +85,7 @@ class CarController extends Controller
             $id = (int)($vars['id'] ?? 0);
             $data = json_decode(file_get_contents('php://input'), true);
 
-            if (!$this->isValidCarData($data)) {
+            if (!$this->carService->isValidCarData($data)) {
                 return $this->sendErrorResponse('Invalid car data', 400);
             }
 
@@ -153,33 +153,5 @@ class CarController extends Controller
         }
 
         return $user;
-    }
-
-    private function isValidCarData(?array $data): bool
-    {
-        if (!$data) {
-            return false;
-        }
-
-        $requiredFields = [
-            'brand',
-            'model',
-            'year',
-            'price',
-            'mileage',
-            'fuelType',
-            'transmission',
-            'status',
-            'imageUrl',
-            'description',
-        ];
-
-        foreach ($requiredFields as $field) {
-            if (!isset($data[$field]) || $data[$field] === '') {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
