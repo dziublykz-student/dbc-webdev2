@@ -25,6 +25,11 @@ class InquiryService implements IInquiryService
         return $this->inquiryRepository->create($data);
     }
 
+    public function update(int $id, array $data): ?Inquiry
+    {
+        return $this->inquiryRepository->update($id, $data);
+    }
+
     public function isValidInquiryData(?array $data): bool
     {
         if (!$data) {
@@ -37,6 +42,44 @@ class InquiryService implements IInquiryService
             if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
                 return false;
             }
+        }
+
+        return filter_var($data['email'], FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    public function isValidInquiryUpdateData(?array $data): bool
+    {
+        if (!$data) {
+            return false;
+        }
+
+        if (!isset($data['status']) || trim((string) $data['status']) === '') {
+            return false;
+        }
+
+        $allowedStatuses = ['new', 'handled'];
+
+        return in_array($data['status'], $allowedStatuses, true);
+    }
+
+    public function addCustomerMessage(int $id, array $data): ?Inquiry
+    {
+        return $this->inquiryRepository->addCustomerMessage($id, $data);
+    }
+
+    public function isValidCustomerFollowUpData(?array $data): bool
+    {
+        if (!$data) {
+            return false;
+        }
+
+        if (
+            !isset($data['email']) ||
+            !isset($data['message']) ||
+            trim((string) $data['email']) === '' ||
+            trim((string) $data['message']) === ''
+        ) {
+            return false;
         }
 
         return filter_var($data['email'], FILTER_VALIDATE_EMAIL) !== false;

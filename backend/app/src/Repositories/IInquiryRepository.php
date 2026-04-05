@@ -6,10 +6,8 @@ use App\Models\Inquiry;
 
 interface IInquiryRepository
 {
-    /**
-     * @return Inquiry[]
-     */
     public function getAll(): array;
-
     public function create(array $data): Inquiry;
+    public function update(int $id, array $data): ?Inquiry;
+    public function addCustomerMessage(int $id, array $data): ?Inquiry;
 }

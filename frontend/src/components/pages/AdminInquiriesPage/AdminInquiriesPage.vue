@@ -12,6 +12,10 @@
         {{ globalError }}
       </p>
 
+      <p v-if="globalSuccess" class="mb-4 text-green-600 font-medium">
+        {{ globalSuccess }}
+      </p>
+
       <div v-if="loading" class="text-center py-12 text-gray-600">
         Loading inquiries...
       </div>
@@ -20,17 +24,20 @@
         {{ error }}
       </div>
 
-      <div v-else-if="inquiries.length === 0" class="bg-white rounded-xl shadow-md p-8 text-center text-gray-600">
+      <div
+        v-else-if="inquiries.length === 0"
+        class="bg-white rounded-xl shadow-md p-8 text-center text-gray-600"
+      >
         No inquiries found.
       </div>
 
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-6">
         <div
           v-for="inquiry in inquiries"
           :key="inquiry.id"
           class="bg-white rounded-xl shadow-md p-6"
         >
-          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-6">
             <div>
               <h2 class="text-xl font-semibold text-gray-900">
                 Inquiry #{{ inquiry.id }}
@@ -38,28 +45,83 @@
               <p class="text-sm text-gray-600">
                 Car ID: {{ inquiry.carId }}
               </p>
-
               <p class="text-sm text-gray-600">
-                Car Brand: {{ inquiry.carBrand || 'Unknown' }}
+                {{ inquiry.name }} • {{ inquiry.email }}
               </p>
             </div>
 
-            <p class="text-sm text-gray-500">
-              {{ formatDate(inquiry.createdAt) }}
-            </p>
+            <div class="text-right">
+              <p class="text-sm text-gray-500 mb-1">
+                {{ formatDate(inquiry.createdAt) }}
+              </p>
+              <span
+                class="text-xs font-semibold px-2 py-1 rounded-full"
+                :class="inquiry.status === 'handled'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-yellow-100 text-yellow-700'"
+              >
+                {{ inquiry.status }}
+              </span>
+            </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm text-gray-700">
-            <div>
-              <strong>Name:</strong> {{ inquiry.name }}
-            </div>
-            <div>
-              <strong>Email:</strong> {{ inquiry.email }}
+          <div class="space-y-3 mb-6">
+            <div
+              v-for="message in inquiry.messages"
+              :key="message.id"
+              class="flex"
+              :class="message.senderType === 'admin' ? 'justify-end' : 'justify-start'"
+            >
+              <div
+                class="max-w-[75%] rounded-2xl px-4 py-3 shadow-sm"
+                :class="message.senderType === 'admin'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-900'"
+              >
+                <div class="text-xs opacity-80 mb-1 font-semibold">
+                  {{ message.senderType === 'admin' ? 'Admin' : inquiry.name }}
+                </div>
+                <div class="whitespace-pre-wrap break-words">
+                  {{ message.message }}
+                </div>
+                <div
+                  class="text-[11px] mt-2"
+                  :class="message.senderType === 'admin' ? 'text-blue-100' : 'text-gray-500'"
+                >
+                  {{ formatDate(message.createdAt) }}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 rounded-lg p-4 text-gray-800">
-            {{ inquiry.message }}
+          <div class="border-t pt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Reply as admin
+            </label>
+            <textarea
+              v-model="replyForms[inquiry.id].adminReply"
+              class="w-full border rounded-lg px-4 py-2 mb-3"
+              rows="4"
+              placeholder="Write a reply..."
+            ></textarea>
+
+            <div class="flex flex-col md:flex-row gap-3 md:items-center">
+              <select
+                v-model="replyForms[inquiry.id].status"
+                class="border rounded-lg px-4 py-2"
+              >
+                <option value="new">new</option>
+                <option value="handled">handled</option>
+              </select>
+
+              <button
+                type="button"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                @click="saveReply(inquiry.id)"
+              >
+                Send Reply
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -79,6 +141,8 @@ const inquiries = ref([])
 const loading = ref(true)
 const error = ref(null)
 const globalError = ref('')
+const globalSuccess = ref('')
+const replyForms = ref({})
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token')
@@ -89,10 +153,22 @@ const getAuthHeaders = () => {
   }
 }
 
+const initializeReplyForms = () => {
+  const forms = {}
+  for (const inquiry of inquiries.value) {
+    forms[inquiry.id] = {
+      adminReply: '',
+      status: inquiry.status ?? 'new',
+    }
+  }
+  replyForms.value = forms
+}
+
 const fetchInquiries = async () => {
   loading.value = true
   error.value = null
   globalError.value = ''
+  globalSuccess.value = ''
 
   try {
     const response = await fetch('http://localhost/inquiries', {
@@ -114,12 +190,58 @@ const fetchInquiries = async () => {
     }
 
     inquiries.value = Array.isArray(result) ? result : (result.data ?? [])
+    initializeReplyForms()
   } catch (err) {
     console.error('Error fetching inquiries:', err)
     error.value = err.message || 'Failed to load inquiries.'
     inquiries.value = []
   } finally {
     loading.value = false
+  }
+}
+
+const saveReply = async (inquiryId) => {
+  globalError.value = ''
+  globalSuccess.value = ''
+
+  const replyText = replyForms.value[inquiryId].adminReply?.trim() ?? ''
+  const status = replyForms.value[inquiryId].status
+
+  if (!replyText && !status) {
+    globalError.value = 'Please enter a reply or choose a status.'
+    return
+  }
+
+  try {
+    const payload = {
+      adminReply: replyText,
+      status,
+    }
+
+    const response = await fetch(`http://localhost/inquiries/${inquiryId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    })
+
+    const text = await response.text()
+    let result = null
+
+    try {
+      result = JSON.parse(text)
+    } catch {
+      throw new Error(`Server did not return valid JSON. Response was: ${text.substring(0, 100)}`)
+    }
+
+    if (!response.ok) {
+      throw new Error(result.error || `Failed to update inquiry: ${response.status}`)
+    }
+
+    globalSuccess.value = 'Inquiry updated successfully.'
+    await fetchInquiries()
+  } catch (err) {
+    console.error('Error updating inquiry:', err)
+    globalError.value = err.message || 'Failed to update inquiry.'
   }
 }
 
