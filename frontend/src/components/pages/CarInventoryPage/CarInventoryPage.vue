@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <ArticleArchive
+    <CarInventory
       v-else
       :articles="mappedCars"
       :filters="filters"
@@ -42,7 +42,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import ArticleArchive from "../../templates/ArticleArchive/ArticleArchive.vue";
+import CarInventory from "../../templates/CarInventory/CarInventory.vue";
 import { get } from "../../../utils/api.js";
 
 const cars = ref([]);

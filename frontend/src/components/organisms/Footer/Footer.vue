@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-gray-50 border-t border-gray-200 mt-auto">
+  <footer class="bg-black border-t border-gray-200 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <!-- Brand section -->
@@ -15,7 +15,7 @@
               v-for="social in socialLinks" 
               :key="social.name"
               :href="social.href" 
-              class="text-gray-600 hover:text-blue-600 transition-colors"
+              class="text-white hover:text-blue-600 transition-colors"
               :aria-label="social.name"
             >
               <component :is="social.icon" class="h-5 w-5" />
@@ -32,7 +32,7 @@
             <li v-for="link in quickLinks" :key="link.name">
               <a 
                 :href="link.href" 
-                class="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+                class="text-white hover:text-blue-600 transition-colors text-sm"
               >
                 {{ link.name }}
               </a>
@@ -49,7 +49,7 @@
             <li v-for="link in legalLinks" :key="link.name">
               <a 
                 :href="link.href" 
-                class="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+                class="text-white hover:text-blue-600 transition-colors text-sm"
               >
                 {{ link.name }}
               </a>
@@ -60,7 +60,7 @@
       
       <div class="mt-8 pt-8 border-t border-gray-200">
         <Text as="p" size="sm" color="muted" class="text-center">
-          © {{ currentYear }} Article Archive. All rights reserved.
+          © {{ currentYear }} DBC Auto. All rights reserved.
         </Text>
       </div>
     </div>

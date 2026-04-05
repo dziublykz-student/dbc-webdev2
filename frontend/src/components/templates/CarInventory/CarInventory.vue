@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import Header from '../../organisms/Header/Header.vue';
 import Footer from '../../organisms/Footer/Footer.vue';
-import ArticleCard from '../../organisms/CarCard/CarCard.vue';
+import CarCard from '../../organisms/CarCard/CarCard.vue';
 import Heading from '../../atoms/Heading/Heading.vue';
 import Text from '../../atoms/Text/Text.vue';
 
@@ -45,7 +45,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['article-click', 'apply-filters', 'reset-filters']);
+const emit = defineEmits([
+  'article-click',
+  'apply-filters',
+  'reset-filters',
+  'update:filters',
+]);
 
 const isLoggedIn = computed(() => !!localStorage.getItem('token'));
 
@@ -144,10 +149,10 @@ const handleArticleClick = (articleId) => {
         v-if="articles && articles.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        <ArticleCard
-          v-for="article in articles"
-          :key="article.id"
-          :article="article"
+        <CarCard
+          v-for="car in articles"
+          :key="car.id"
+          :article="car"
           @click="handleArticleClick"
         />
       </div>

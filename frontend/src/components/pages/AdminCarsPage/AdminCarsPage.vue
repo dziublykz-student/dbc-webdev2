@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">Admin Car Management</h1>
+          <Heading :level="1" size="3xl">Admin Car Management</Heading>
           <p class="text-gray-600 mt-2">Manage dealership inventory</p>
         </div>
 
@@ -30,47 +30,15 @@
         You can view the admin inventory, but only admins can create, edit, or delete cars.
       </div>
 
-      <div
+      <AdminCarForm
         v-if="showCreateForm && isAdmin"
-        class="bg-white rounded-xl shadow-md p-6 mb-8"
-      >
-        <h2 class="text-xl font-semibold mb-4">
-          {{ isEditing ? 'Edit Car' : 'Create New Car' }}
-        </h2>
-
-        <p v-if="formError" class="mb-4 text-red-600 font-medium">
-          {{ formError }}
-        </p>
-
-        <p v-if="formSuccess" class="mb-4 text-green-600 font-medium">
-          {{ formSuccess }}
-        </p>
-
-        <form @submit.prevent="saveCar" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input v-model="form.brand" type="text" placeholder="Brand" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.model" type="text" placeholder="Model" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.year" type="number" placeholder="Year" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.price" type="number" placeholder="Price" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.mileage" type="number" placeholder="Mileage" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.fuelType" type="text" placeholder="Fuel Type" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.transmission" type="text" placeholder="Transmission" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.status" type="text" placeholder="Status" class="border rounded-lg px-4 py-2" />
-          <input v-model="form.imageUrl" type="text" placeholder="Image URL" class="border rounded-lg px-4 py-2 md:col-span-2" />
-          <textarea
-            v-model="form.description"
-            placeholder="Description"
-            class="border rounded-lg px-4 py-2 md:col-span-2"
-            rows="4"
-          ></textarea>
-
-          <button
-            type="submit"
-            class="md:col-span-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            {{ isEditing ? 'Update Car' : 'Create Car' }}
-          </button>
-        </form>
-      </div>
+        :form="form"
+        :is-editing="isEditing"
+        :form-error="formError"
+        :form-success="formSuccess"
+        @save="saveCar"
+        @update:form="form = $event"
+      />
 
       <p v-if="globalSuccess" class="mb-4 text-green-600 font-medium">
         {{ globalSuccess }}
@@ -88,53 +56,13 @@
         {{ error }}
       </div>
 
-      <div v-else class="bg-white rounded-xl shadow-md overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="text-left px-4 py-3">ID</th>
-              <th class="text-left px-4 py-3">Brand</th>
-              <th class="text-left px-4 py-3">Model</th>
-              <th class="text-left px-4 py-3">Year</th>
-              <th class="text-left px-4 py-3">Price</th>
-              <th class="text-left px-4 py-3">Status</th>
-              <th v-if="isAdmin" class="text-left px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="car in cars"
-              :key="car.id"
-              class="border-t"
-            >
-              <td class="px-4 py-3">{{ car.id }}</td>
-              <td class="px-4 py-3">{{ car.brand }}</td>
-              <td class="px-4 py-3">{{ car.model }}</td>
-              <td class="px-4 py-3">{{ car.year }}</td>
-              <td class="px-4 py-3">€{{ Number(car.price).toLocaleString() }}</td>
-              <td class="px-4 py-3">{{ car.status }}</td>
-
-              <td v-if="isAdmin" class="px-4 py-3">
-                <button
-                  type="button"
-                  class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors mr-2"
-                  @click="startEdit(car)"
-                >
-                  Edit
-                </button>
-
-                <button
-                  type="button"
-                  class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                  @click="deleteCar(car.id)"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <AdminCarsTable
+        v-else
+        :cars="cars"
+        :is-admin="isAdmin"
+        @edit="startEdit"
+        @delete="deleteCar"
+      />
 
       <div class="mt-6 flex gap-4">
         <a href="#/" class="text-blue-600 hover:underline">← Back to Inventory</a>
@@ -153,6 +81,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { get } from '../../../utils/api.js'
+import Heading from '../../atoms/Heading/Heading.vue'
+import AdminCarForm from '../../organisms/AdminCarForm/AdminCarForm.vue'
+import AdminCarsTable from '../../organisms/AdminCarsTable/AdminCarsTable.vue'
 
 const cars = ref([])
 const loading = ref(true)

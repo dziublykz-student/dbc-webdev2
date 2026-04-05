@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
     <div class="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Login</h1>
+      <Heading :level="1" size="3xl" class="mb-2">Login</Heading>
       <p class="text-gray-600 mb-6">Sign in to manage dealership inventory</p>
 
       <p v-if="error" class="mb-4 text-red-600 font-medium">
         {{ error }}
       </p>
 
-      <form @submit.prevent="login" class="space-y-4">
+      <form class="space-y-4">
         <input
           v-model="email"
           type="email"
@@ -23,12 +23,9 @@
           class="w-full border rounded-lg px-4 py-2"
         />
 
-        <button
-          type="submit"
-          class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Login
-        </button>
+        <div class="w-full" @click="login">
+          <Button label="Login" primary size="medium" />
+        </div>
       </form>
 
       <div class="mt-6 text-sm text-gray-600">
@@ -46,6 +43,8 @@
 <script setup>
 import { ref } from 'vue'
 import { post } from '../../../utils/api.js'
+import Button from '../../atoms/Button/Button.vue'
+import Heading from '../../atoms/Heading/Heading.vue'
 
 const email = ref('')
 const password = ref('')

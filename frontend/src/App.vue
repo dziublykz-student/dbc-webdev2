@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import ArticleArchivePage from './components/pages/ArticleArchivePage/ArticleArchivePage.vue'
+import CarInventoryPage from './components/pages/CarInventoryPage/CarInventoryPage.vue'
 import CarDetailPage from './components/pages/CarDetailPage/CarDetailPage.vue'
 import AdminCarsPage from './components/pages/AdminCarsPage/AdminCarsPage.vue'
 import LoginPage from './components/pages/LoginPage/LoginPage.vue'
@@ -50,5 +50,5 @@ const canAccessAdmin = computed(() => !!authToken.value)
   <AdminCarsPage v-else-if="isAdminCarsPage && canAccessAdmin" />
   <LoginPage v-else-if="isAdminCarsPage && !canAccessAdmin" />
   <CarDetailPage v-else-if="isCarDetailPage" />
-  <ArticleArchivePage v-else :key="authToken || 'guest'" />
+  <CarInventoryPage v-else :key="authToken || 'guest'" />
 </template>
