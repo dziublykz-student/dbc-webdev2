@@ -30,6 +30,16 @@ class InquiryService implements IInquiryService
         return $this->inquiryRepository->update($id, $data);
     }
 
+    public function addCustomerMessage(int $id, array $data): ?Inquiry
+    {
+        return $this->inquiryRepository->addCustomerMessage($id, $data);
+    }
+
+    public function getByIdAndEmail(int $id, string $email): ?Inquiry
+    {
+        return $this->inquiryRepository->getByIdAndEmail($id, $email);
+    }
+
     public function isValidInquiryData(?array $data): bool
     {
         if (!$data) {
@@ -59,12 +69,15 @@ class InquiryService implements IInquiryService
 
         $allowedStatuses = ['new', 'handled'];
 
-        return in_array($data['status'], $allowedStatuses, true);
-    }
+        if (!in_array($data['status'], $allowedStatuses, true)) {
+            return false;
+        }
 
-    public function addCustomerMessage(int $id, array $data): ?Inquiry
-    {
-        return $this->inquiryRepository->addCustomerMessage($id, $data);
+        if (isset($data['adminReply']) && !is_string($data['adminReply'])) {
+            return false;
+        }
+
+        return true;
     }
 
     public function isValidCustomerFollowUpData(?array $data): bool

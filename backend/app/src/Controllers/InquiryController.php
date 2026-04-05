@@ -98,6 +98,28 @@ class InquiryController extends Controller
         }
     }
 
+    public function getOneForCustomer($vars = [])
+    {
+        try {
+            $id = (int) ($vars['id'] ?? 0);
+            $email = trim((string) ($_GET['email'] ?? ''));
+
+            if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                return $this->sendErrorResponse('Invalid inquiry access data', 400);
+            }
+
+            $inquiry = $this->inquiryService->getByIdAndEmail($id, $email);
+
+            if (!$inquiry) {
+                return $this->sendErrorResponse('Inquiry not found or email does not match', 404);
+            }
+
+            return $this->sendSuccessResponse($inquiry);
+        } catch (\Exception $e) {
+            return $this->sendErrorResponse('Internal server error', 500);
+        }
+    }
+
     private function requireAuth(): ?array
     {
         $token = JwtHelper::getBearerToken();

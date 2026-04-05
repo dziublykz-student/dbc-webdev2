@@ -13,4 +13,5 @@ interface IInquiryService
     public function isValidInquiryUpdateData(?array $data): bool;
     public function addCustomerMessage(int $id, array $data): ?Inquiry;
     public function isValidCustomerFollowUpData(?array $data): bool;
+    public function getByIdAndEmail(int $id, string $email): ?Inquiry;
 }

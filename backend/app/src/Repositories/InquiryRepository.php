@@ -171,6 +171,24 @@ class InquiryRepository implements IInquiryRepository
         return $this->getById($id);
     }
 
+    public function getByIdAndEmail(int $id, string $email): ?Inquiry
+    {
+        $stmt = $this->connection->prepare("
+            SELECT * FROM inquiries
+            WHERE id = :id AND email = :email
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'id' => $id,
+            'email' => $email,
+        ]);
+
+        $row = $stmt->fetch();
+
+        return $row ? $this->mapToInquiry($row) : null;
+    }
+
     private function mapToInquiry(array $row): Inquiry
     {
         $messages = $this->getMessagesByInquiryId((int) $row['id']);

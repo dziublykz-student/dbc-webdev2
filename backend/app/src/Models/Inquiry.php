@@ -4,9 +4,6 @@ namespace App\Models;
 
 class Inquiry implements \JsonSerializable
 {
-    /**
-     * @param InquiryMessage[] $messages
-     */
     public function __construct(
         public readonly int $id,
         public readonly int $carId,
