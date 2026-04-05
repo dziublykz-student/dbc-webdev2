@@ -3,52 +3,54 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Utils\Database;
+use PDO;
 
 class UserRepository implements IUserRepository
 {
-    private string $dataFile;
+    private PDO $connection;
 
     public function __construct()
     {
-        $this->dataFile = __DIR__ . '/../data/users.json';
+        $this->connection = Database::getConnection();
     }
 
     public function getByEmail(string $email): ?User
     {
-        $users = $this->readData();
+        $stmt = $this->connection->prepare("
+            SELECT * FROM users
+            WHERE email = :email
+            LIMIT 1
+        ");
 
-        foreach ($users as $user) {
-            if (strtolower($user['email']) === strtolower($email)) {
-                return $this->mapToUser($user);
-            }
-        }
+        $stmt->bindValue(':email', $email);
+        $stmt->execute();
 
-        return null;
+        $user = $stmt->fetch();
+
+        return $user ? $this->mapToUser($user) : null;
     }
 
     public function getById(int $id): ?User
     {
-        $users = $this->readData();
+        $stmt = $this->connection->prepare("
+            SELECT * FROM users
+            WHERE id = :id
+            LIMIT 1
+        ");
 
-        foreach ($users as $user) {
-            if ((int)$user['id'] === $id) {
-                return $this->mapToUser($user);
-            }
-        }
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return null;
-    }
+        $user = $stmt->fetch();
 
-    private function readData(): array
-    {
-        $json = file_get_contents($this->dataFile);
-        return json_decode($json, true) ?? [];
+        return $user ? $this->mapToUser($user) : null;
     }
 
     private function mapToUser(array $user): User
     {
         return new User(
-            id: (int)$user['id'],
+            id: (int) $user['id'],
             name: $user['name'],
             email: $user['email'],
             password: $user['password'],

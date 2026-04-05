@@ -3,158 +3,180 @@
 namespace App\Repositories;
 
 use App\Models\Car;
+use App\Utils\Database;
+use PDO;
 
 class CarRepository implements ICarRepository
 {
-    private string $dataFile;
+    private PDO $connection;
 
     public function __construct()
     {
-        $this->dataFile = __DIR__ . '/../data/cars.json';
+        $this->connection = Database::getConnection();
     }
 
     public function getAll(array $filters = [], int $page = 1, int $limit = 10): array
     {
-        $cars = $this->applyFilters($this->readData(), $filters);
+        $sql = "SELECT * FROM cars";
+        $params = [];
+
+        [$whereClause, $params] = $this->buildWhereClause($filters);
+
+        if ($whereClause !== '') {
+            $sql .= ' ' . $whereClause;
+        }
 
         $offset = max(0, ($page - 1) * $limit);
-        $cars = array_slice($cars, $offset, $limit);
+        $sql .= " LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->connection->prepare($sql);
+
+        $this->bindFilterParams($stmt, $params);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        $cars = $stmt->fetchAll();
 
         return array_map(fn(array $car) => $this->mapToCar($car), $cars);
     }
 
     public function countAll(array $filters = []): int
     {
-        $cars = $this->applyFilters($this->readData(), $filters);
-        return count($cars);
+        $sql = "SELECT COUNT(*) as total FROM cars";
+        $params = [];
+
+        [$whereClause, $params] = $this->buildWhereClause($filters);
+
+        if ($whereClause !== '') {
+            $sql .= ' ' . $whereClause;
+        }
+
+        $stmt = $this->connection->prepare($sql);
+        $this->bindFilterParams($stmt, $params);
+        $stmt->execute();
+
+        $result = $stmt->fetch();
+
+        return (int) ($result['total'] ?? 0);
     }
 
     public function getById(int $id): ?Car
     {
-        $data = $this->readData();
+        $stmt = $this->connection->prepare("SELECT * FROM cars WHERE id = :id");
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
 
-        foreach ($data as $car) {
-            if ((int)$car['id'] === $id) {
-                return $this->mapToCar($car);
-            }
-        }
+        $car = $stmt->fetch();
 
-        return null;
+        return $car ? $this->mapToCar($car) : null;
     }
 
     public function create(array $data): Car
     {
-        $cars = $this->readData();
+        $stmt = $this->connection->prepare("
+            INSERT INTO cars (
+                brand, model, year, price, mileage,
+                fuelType, transmission, status, imageUrl, description
+            ) VALUES (
+                :brand, :model, :year, :price, :mileage,
+                :fuelType, :transmission, :status, :imageUrl, :description
+            )
+        ");
 
-        $newId = empty($cars) ? 1 : max(array_column($cars, 'id')) + 1;
-
-        $newCar = [
-            'id' => $newId,
+        $stmt->execute([
             'brand' => $data['brand'],
             'model' => $data['model'],
-            'year' => (int)$data['year'],
-            'price' => (float)$data['price'],
-            'mileage' => (int)$data['mileage'],
+            'year' => (int) $data['year'],
+            'price' => (float) $data['price'],
+            'mileage' => (int) $data['mileage'],
             'fuelType' => $data['fuelType'],
             'transmission' => $data['transmission'],
             'status' => $data['status'],
             'imageUrl' => $data['imageUrl'],
             'description' => $data['description'],
-        ];
+        ]);
 
-        $cars[] = $newCar;
-        $this->writeData($cars);
-
-        return $this->mapToCar($newCar);
+        return $this->getById((int) $this->connection->lastInsertId());
     }
 
     public function update(int $id, array $data): ?Car
     {
-        $cars = $this->readData();
+        $stmt = $this->connection->prepare("
+            UPDATE cars
+            SET
+                brand = :brand,
+                model = :model,
+                year = :year,
+                price = :price,
+                mileage = :mileage,
+                fuelType = :fuelType,
+                transmission = :transmission,
+                status = :status,
+                imageUrl = :imageUrl,
+                description = :description
+            WHERE id = :id
+        ");
 
-        foreach ($cars as $index => $car) {
-            if ((int)$car['id'] === $id) {
-                $updatedCar = [
-                    'id' => $id,
-                    'brand' => $data['brand'],
-                    'model' => $data['model'],
-                    'year' => (int)$data['year'],
-                    'price' => (float)$data['price'],
-                    'mileage' => (int)$data['mileage'],
-                    'fuelType' => $data['fuelType'],
-                    'transmission' => $data['transmission'],
-                    'status' => $data['status'],
-                    'imageUrl' => $data['imageUrl'],
-                    'description' => $data['description'],
-                ];
+        $stmt->execute([
+            'id' => $id,
+            'brand' => $data['brand'],
+            'model' => $data['model'],
+            'year' => (int) $data['year'],
+            'price' => (float) $data['price'],
+            'mileage' => (int) $data['mileage'],
+            'fuelType' => $data['fuelType'],
+            'transmission' => $data['transmission'],
+            'status' => $data['status'],
+            'imageUrl' => $data['imageUrl'],
+            'description' => $data['description'],
+        ]);
 
-                $cars[$index] = $updatedCar;
-                $this->writeData($cars);
-
-                return $this->mapToCar($updatedCar);
-            }
-        }
-
-        return null;
+        return $this->getById($id);
     }
 
     public function delete(int $id): bool
     {
-        $cars = $this->readData();
-        $originalCount = count($cars);
+        $stmt = $this->connection->prepare("DELETE FROM cars WHERE id = :id");
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
 
-        $cars = array_values(array_filter($cars, fn(array $car) => (int)$car['id'] !== $id));
+        return $stmt->rowCount() > 0;
+    }
 
-        if (count($cars) === $originalCount) {
-            return false;
+    private function buildWhereClause(array $filters): array
+    {
+        if (empty($filters)) {
+            return ['', []];
         }
 
-        $this->writeData($cars);
-        return true;
+        $conditions = [];
+        $params = [];
+
+        foreach ($filters as $filter) {
+            $conditions[] = "{$filter['field']} = :{$filter['placeholder']}";
+            $params[$filter['placeholder']] = $filter['value'];
+        }
+
+        return ['WHERE ' . implode(' AND ', $conditions), $params];
     }
 
-    private function applyFilters(array $cars, array $filters): array
+    private function bindFilterParams(\PDOStatement $stmt, array $params): void
     {
-        return array_values(array_filter($cars, function (array $car) use ($filters) {
-            if (!empty($filters['brand']) && strcasecmp($car['brand'], $filters['brand']) !== 0) {
-                return false;
-            }
-
-            if (!empty($filters['fuelType']) && strcasecmp($car['fuelType'], $filters['fuelType']) !== 0) {
-                return false;
-            }
-
-            if (!empty($filters['status']) && strcasecmp($car['status'], $filters['status']) !== 0) {
-                return false;
-            }
-
-            return true;
-        }));
-    }
-
-    private function readData(): array
-    {
-        $json = file_get_contents($this->dataFile);
-        return json_decode($json, true) ?? [];
-    }
-
-    private function writeData(array $data): void
-    {
-        file_put_contents(
-            $this->dataFile,
-            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-        );
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
     }
 
     private function mapToCar(array $car): Car
     {
         return new Car(
-            id: (int)$car['id'],
+            id: (int) $car['id'],
             brand: $car['brand'],
             model: $car['model'],
-            year: (int)$car['year'],
-            price: (float)$car['price'],
-            mileage: (int)$car['mileage'],
+            year: (int) $car['year'],
+            price: (float) $car['price'],
+            mileage: (int) $car['mileage'],
             fuelType: $car['fuelType'],
             transmission: $car['transmission'],
             status: $car['status'],
