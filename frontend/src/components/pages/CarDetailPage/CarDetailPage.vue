@@ -33,7 +33,7 @@
         ← Back to Inventory
       </a>
 
-      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
         <div class="grid grid-cols-1 lg:grid-cols-2">
           <div class="h-80 lg:h-full bg-gray-200">
             <img
@@ -95,17 +95,72 @@
           </div>
         </div>
       </div>
+
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          Interested in this car?
+        </h2>
+        <p class="text-gray-600 mb-6">
+          Send a message and the dealership can follow up with you.
+        </p>
+
+        <p v-if="formError" class="mb-4 text-red-600 font-medium">
+          {{ formError }}
+        </p>
+
+        <p v-if="formSuccess" class="mb-4 text-green-600 font-medium">
+          {{ formSuccess }}
+        </p>
+
+        <form @submit.prevent="submitInquiry" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            v-model="inquiryForm.name"
+            type="text"
+            placeholder="Your name"
+            class="border rounded-lg px-4 py-2"
+          />
+
+          <input
+            v-model="inquiryForm.email"
+            type="email"
+            placeholder="Your email"
+            class="border rounded-lg px-4 py-2"
+          />
+
+          <textarea
+            v-model="inquiryForm.message"
+            placeholder="Your message"
+            class="border rounded-lg px-4 py-2 md:col-span-2"
+            rows="5"
+          ></textarea>
+
+          <button
+            type="submit"
+            class="md:col-span-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Send Inquiry
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { get } from '../../../utils/api.js'
+import { get, post } from '../../../utils/api.js'
 
 const car = ref(null)
 const loading = ref(true)
 const error = ref(null)
+const formError = ref('')
+const formSuccess = ref('')
+
+const inquiryForm = ref({
+  name: '',
+  email: '',
+  message: '',
+})
 
 const getCarIdFromHash = () => {
   const hash = window.location.hash
@@ -133,6 +188,50 @@ const fetchCar = async () => {
     car.value = null
   } finally {
     loading.value = false
+  }
+}
+
+const validateInquiryForm = () => {
+  if (!inquiryForm.value.name.trim()) return false
+  if (!inquiryForm.value.email.trim()) return false
+  if (!inquiryForm.value.message.trim()) return false
+  return true
+}
+
+const resetInquiryForm = () => {
+  inquiryForm.value = {
+    name: '',
+    email: '',
+    message: '',
+  }
+}
+
+const submitInquiry = async () => {
+  formError.value = ''
+  formSuccess.value = ''
+
+  if (!validateInquiryForm()) {
+    formError.value = 'Please fill in all fields before sending your inquiry.'
+    return
+  }
+
+  try {
+    const response = await post('/inquiries', {
+      carId: car.value.id,
+      name: inquiryForm.value.name,
+      email: inquiryForm.value.email,
+      message: inquiryForm.value.message,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to send inquiry: ${response.status} ${response.statusText}`)
+    }
+
+    formSuccess.value = 'Your inquiry has been sent successfully.'
+    resetInquiryForm()
+  } catch (err) {
+    console.error('Error sending inquiry:', err)
+    formError.value = err.message || 'Failed to send inquiry.'
   }
 }
 

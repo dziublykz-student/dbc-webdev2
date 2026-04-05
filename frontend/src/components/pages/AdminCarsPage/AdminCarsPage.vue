@@ -66,6 +66,7 @@
 
       <div class="mt-6 flex gap-4">
         <a href="#/" class="text-blue-600 hover:underline">← Back to Inventory</a>
+        <a href="#/admin/inquiries" class="text-blue-600 hover:underline">View Inquiries</a>
         <button
           type="button"
           class="text-red-600 hover:underline"

@@ -4,6 +4,7 @@ import CarInventoryPage from './components/pages/CarInventoryPage/CarInventoryPa
 import CarDetailPage from './components/pages/CarDetailPage/CarDetailPage.vue'
 import AdminCarsPage from './components/pages/AdminCarsPage/AdminCarsPage.vue'
 import LoginPage from './components/pages/LoginPage/LoginPage.vue'
+import AdminInquiriesPage from './components/pages/AdminInquiriesPage/AdminInquiriesPage.vue'
 
 const currentHash = ref(window.location.hash || '#/')
 const authToken = ref(localStorage.getItem('token'))
@@ -43,12 +44,14 @@ const isLoginPage = computed(() => currentHash.value === '#/login')
 const isAdminCarsPage = computed(() => currentHash.value === '#/admin/cars')
 const isCarDetailPage = computed(() => currentHash.value.startsWith('#/cars/'))
 const canAccessAdmin = computed(() => !!authToken.value)
+const isAdminInquiriesPage = computed(() => currentHash.value === '#/admin/inquiries')
 </script>
 
 <template>
   <LoginPage v-if="isLoginPage" />
   <AdminCarsPage v-else-if="isAdminCarsPage && canAccessAdmin" />
   <LoginPage v-else-if="isAdminCarsPage && !canAccessAdmin" />
+  <AdminInquiriesPage v-else-if="isAdminInquiriesPage && canAccessAdmin" />
   <CarDetailPage v-else-if="isCarDetailPage" />
   <CarInventoryPage v-else :key="authToken || 'guest'" />
 </template>
