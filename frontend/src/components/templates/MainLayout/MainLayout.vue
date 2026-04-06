@@ -14,16 +14,30 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import Header from '../../organisms/Header/Header.vue'
 import Footer from '../../organisms/Footer/Footer.vue'
 
-const footerQuickLinks = [
-  { name: 'Home', href: '#/' },
-  { name: 'Cars', href: '#/cars' },
-  { name: 'Find Inquiry', href: '#/find-inquiry' },
-  { name: 'Login', href: '#/login' },
-]
+const lastVisitorConversation = ref('')
+
+const updateRecentInquiry = () => {
+  lastVisitorConversation.value = localStorage.getItem('lastVisitorConversation') || ''
+}
+
+const footerQuickLinks = computed(() => {
+  const links = [
+    { name: 'Home', href: '#/' },
+    { name: 'Cars', href: '#/cars' },
+  ]
+
+  if (lastVisitorConversation.value) {
+    links.push({ name: 'Recent Inquiry', href: lastVisitorConversation.value })
+  }
+
+  links.push({ name: 'Login', href: '#/login' })
+
+  return links
+})
 
 const footerLegalLinks = [
   { name: 'Privacy Policy', href: '/privacy' },
@@ -37,14 +51,19 @@ const computedNavigationLinks = computed(() => {
   const baseLinks = [
     { name: 'Home', href: '#/' },
     { name: 'Cars', href: '#/cars' },
-    { name: 'Find Inquiry', href: '#/find-inquiry' },
   ]
+
+  if (lastVisitorConversation.value && !isLoggedIn.value) {
+    baseLinks.push({
+      name: 'Open Recent Inquiry',
+      href: lastVisitorConversation.value,
+    })
+  }
 
   if (isLoggedIn.value) {
     return [
       ...baseLinks,
-      { name: 'Admin Cars', href: '#/admin/cars' },
-      { name: 'Admin Inquiries', href: '#/admin/inquiries' },
+      { name: 'Admin', href: '#/admin/cars' },
       { name: 'Logout', href: '#/logout' },
     ]
   }
@@ -53,5 +72,18 @@ const computedNavigationLinks = computed(() => {
     ...baseLinks,
     { name: 'Login', href: '#/login' },
   ]
+})
+
+onMounted(() => {
+  updateRecentInquiry()
+  window.addEventListener('storage', updateRecentInquiry)
+  window.addEventListener('focus', updateRecentInquiry)
+  window.addEventListener('hashchange', updateRecentInquiry)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('storage', updateRecentInquiry)
+  window.removeEventListener('focus', updateRecentInquiry)
+  window.removeEventListener('hashchange', updateRecentInquiry)
 })
 </script>

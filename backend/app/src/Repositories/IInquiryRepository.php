@@ -14,5 +14,7 @@ interface IInquiryRepository
 
     public function addCustomerMessage(int $id, array $data): ?Inquiry;
 
-    public function getByIdAndEmail(int $id, string $email): ?Inquiry;
+    public function addCustomerMessageByToken(string $token, array $data): ?Inquiry;
+
+    public function getByPublicToken(string $token): ?Inquiry;
 }

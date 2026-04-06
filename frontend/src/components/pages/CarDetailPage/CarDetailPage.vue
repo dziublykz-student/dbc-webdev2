@@ -114,17 +114,14 @@ const submitInquiry = async () => {
       message: inquiryForm.value.message,
     })
 
+    const result = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Failed to send inquiry: ${response.status} ${response.statusText}`)
+      throw new Error(result.error || `Failed to send inquiry: ${response.status} ${response.statusText}`)
     }
 
-    const result = await response.json()
     const inquiry = result.data ?? result
-
-    formSuccess.value = 'Your inquiry has been sent successfully.'
-
-    const encodedEmail = encodeURIComponent(inquiryForm.value.email)
-    const conversationHash = `#/inquiries/${inquiry.id}?email=${encodedEmail}`
+    const conversationHash = `#/inquiries/token/${inquiry.publicToken}`
 
     localStorage.setItem('lastVisitorConversation', conversationHash)
     window.location.hash = conversationHash

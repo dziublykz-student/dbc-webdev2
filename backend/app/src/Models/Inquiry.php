@@ -11,6 +11,7 @@ class Inquiry implements \JsonSerializable
         public readonly string $email,
         public readonly string $message,
         public readonly string $createdAt,
+        public readonly string $publicToken,
         public readonly ?string $adminReply = null,
         public readonly string $status = 'new',
         public readonly array $messages = []

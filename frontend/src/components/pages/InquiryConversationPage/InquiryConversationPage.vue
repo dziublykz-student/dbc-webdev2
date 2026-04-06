@@ -13,44 +13,21 @@
   />
 
   <MainLayout v-else-if="conversation">
-    <section class="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="max-w-3xl">
-          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400 mb-3">
-            Inquiry Conversation
-          </p>
-
-          <Heading :level="1" size="3xl" class="mb-4">
-            Stay in touch with the dealership
-          </Heading>
-
-          <p class="text-lg text-gray-300 leading-8">
-            Use your inquiry ID and email to reopen this conversation and continue
-            discussing the car with the dealership team.
-          </p>
-        </div>
-
+    <section class="bg-gray-50 py-10">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <a
           href="#/cars"
-          class="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium mb-6"
+          class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium mb-6"
         >
           ← Back to Inventory
         </a>
-      </div>
-    </section>
 
-    <section class="py-10 bg-gray-50">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 mb-8">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
             <div>
               <Heading :level="2" size="2xl" class="mb-2">
-                Inquiry #{{ conversation.id }}
+                Your inquiry conversation
               </Heading>
-
-              <Text as="p" size="sm" color="muted" class="mb-2">
-                Save this inquiry ID: <strong>{{ conversation.id }}</strong>
-              </Text>
 
               <Text as="p" size="sm" color="muted">
                 {{ conversation.name }} • {{ conversation.email }}
@@ -112,7 +89,7 @@
             </Heading>
 
             <Text as="p" size="md" color="muted">
-              Continue the conversation using the same email address.
+              Continue the conversation with another message.
             </Text>
           </div>
 
@@ -125,13 +102,6 @@
           </p>
 
           <form @submit.prevent="submitFollowUp" class="space-y-4">
-            <input
-              v-model="email"
-              type="email"
-              placeholder="Your email"
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
             <textarea
               v-model="followUpMessage"
               placeholder="Write your follow-up message"
@@ -164,22 +134,13 @@ import Text from '../../atoms/Text/Text.vue'
 const conversation = ref(null)
 const loading = ref(true)
 const error = ref(null)
-const email = ref('')
 const followUpMessage = ref('')
 const followUpError = ref('')
 const followUpSuccess = ref('')
 
-const getInquiryIdFromHash = () => {
-  const hashWithoutQuery = window.location.hash.split('?')[0]
-  const parts = hashWithoutQuery.split('/')
-  return parts[2]
-}
-
-const getEmailFromHash = () => {
-  const hash = window.location.hash
-  const queryString = hash.includes('?') ? hash.split('?')[1] : ''
-  const params = new URLSearchParams(queryString)
-  return params.get('email') || ''
+const getTokenFromHash = () => {
+  const parts = window.location.hash.split('/')
+  return parts[3] || ''
 }
 
 const goBack = () => {
@@ -190,18 +151,16 @@ const fetchConversation = async () => {
   loading.value = true
   error.value = null
 
-  const inquiryId = getInquiryIdFromHash()
-  const currentEmail = email.value.trim()
+  const token = getTokenFromHash()
 
-  if (!inquiryId || !currentEmail) {
-    error.value = 'Missing inquiry id or email.'
+  if (!token) {
+    error.value = 'Missing inquiry token.'
     loading.value = false
     return
   }
 
   try {
-    const encodedEmail = encodeURIComponent(currentEmail)
-    const response = await get(`/inquiries/${inquiryId}/view?email=${encodedEmail}`)
+    const response = await get(`/inquiries/token/${token}`)
     const result = await response.json()
 
     if (!response.ok) {
@@ -209,6 +168,7 @@ const fetchConversation = async () => {
     }
 
     conversation.value = result.data ?? result
+    localStorage.setItem('lastVisitorConversation', window.location.hash)
   } catch (err) {
     console.error('Error loading conversation:', err)
     error.value = err.message || 'Failed to load conversation.'
@@ -222,21 +182,20 @@ const submitFollowUp = async () => {
   followUpError.value = ''
   followUpSuccess.value = ''
 
-  const inquiryId = getInquiryIdFromHash()
+  const token = getTokenFromHash()
 
-  if (!inquiryId) {
-    followUpError.value = 'Missing inquiry id.'
+  if (!token) {
+    followUpError.value = 'Missing inquiry token.'
     return
   }
 
-  if (!email.value.trim() || !followUpMessage.value.trim()) {
-    followUpError.value = 'Please fill in both email and follow-up message.'
+  if (!followUpMessage.value.trim()) {
+    followUpError.value = 'Please write a follow-up message.'
     return
   }
 
   try {
-    const response = await post(`/inquiries/${inquiryId}/messages`, {
-      email: email.value,
+    const response = await post(`/inquiries/token/${token}/messages`, {
       message: followUpMessage.value,
     })
 
@@ -264,7 +223,6 @@ const formatDate = (value) => {
 }
 
 onMounted(async () => {
-  email.value = decodeURIComponent(getEmailFromHash())
   await fetchConversation()
 })
 </script>

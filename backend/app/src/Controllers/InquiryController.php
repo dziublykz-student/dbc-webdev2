@@ -76,20 +76,19 @@ class InquiryController extends Controller
         }
     }
 
-    public function addCustomerMessage($vars = [])
+    public function getOneByToken($vars = [])
     {
         try {
-            $id = (int) ($vars['id'] ?? 0);
-            $data = json_decode(file_get_contents('php://input'), true);
+            $token = (string) ($vars['token'] ?? '');
 
-            if (!$this->inquiryService->isValidCustomerFollowUpData($data)) {
-                return $this->sendErrorResponse('Invalid follow-up data', 400);
+            if (trim($token) === '') {
+                return $this->sendErrorResponse('Invalid inquiry token', 400);
             }
 
-            $inquiry = $this->inquiryService->addCustomerMessage($id, $data);
+            $inquiry = $this->inquiryService->getByPublicToken($token);
 
             if (!$inquiry) {
-                return $this->sendErrorResponse('Inquiry not found or email does not match', 404);
+                return $this->sendErrorResponse('Inquiry not found', 404);
             }
 
             return $this->sendSuccessResponse($inquiry);
@@ -98,20 +97,24 @@ class InquiryController extends Controller
         }
     }
 
-    public function getOneForCustomer($vars = [])
+    public function addCustomerMessageByToken($vars = [])
     {
         try {
-            $id = (int) ($vars['id'] ?? 0);
-            $email = trim((string) ($_GET['email'] ?? ''));
+            $token = (string) ($vars['token'] ?? '');
+            $data = json_decode(file_get_contents('php://input'), true);
 
-            if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-                return $this->sendErrorResponse('Invalid inquiry access data', 400);
+            if (trim($token) === '') {
+                return $this->sendErrorResponse('Invalid inquiry token', 400);
             }
 
-            $inquiry = $this->inquiryService->getByIdAndEmail($id, $email);
+            if (!$this->inquiryService->isValidCustomerFollowUpData($data)) {
+                return $this->sendErrorResponse('Invalid follow-up data', 400);
+            }
+
+            $inquiry = $this->inquiryService->addCustomerMessageByToken($token, $data);
 
             if (!$inquiry) {
-                return $this->sendErrorResponse('Inquiry not found or email does not match', 404);
+                return $this->sendErrorResponse('Inquiry not found', 404);
             }
 
             return $this->sendSuccessResponse($inquiry);

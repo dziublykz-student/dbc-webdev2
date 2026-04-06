@@ -30,14 +30,14 @@ class InquiryService implements IInquiryService
         return $this->inquiryRepository->update($id, $data);
     }
 
-    public function addCustomerMessage(int $id, array $data): ?Inquiry
+    public function getByPublicToken(string $token): ?Inquiry
     {
-        return $this->inquiryRepository->addCustomerMessage($id, $data);
+        return $this->inquiryRepository->getByPublicToken($token);
     }
 
-    public function getByIdAndEmail(int $id, string $email): ?Inquiry
+    public function addCustomerMessageByToken(string $token, array $data): ?Inquiry
     {
-        return $this->inquiryRepository->getByIdAndEmail($id, $email);
+        return $this->inquiryRepository->addCustomerMessageByToken($token, $data);
     }
 
     public function isValidInquiryData(?array $data): bool
@@ -87,14 +87,12 @@ class InquiryService implements IInquiryService
         }
 
         if (
-            !isset($data['email']) ||
             !isset($data['message']) ||
-            trim((string) $data['email']) === '' ||
             trim((string) $data['message']) === ''
         ) {
             return false;
         }
 
-        return filter_var($data['email'], FILTER_VALIDATE_EMAIL) !== false;
+        return true;
     }
 }

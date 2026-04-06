@@ -26,10 +26,11 @@
               </a>
 
               <a
-                href="#/find-inquiry"
+                v-if="lastVisitorConversation"
+                :href="lastVisitorConversation"
                 class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white/10 text-white font-semibold border border-white/20 hover:bg-white/20 transition-colors"
               >
-                Find Your Inquiry
+                Open Recent Inquiry
               </a>
             </div>
           </div>
@@ -131,10 +132,11 @@
                 </a>
 
                 <a
-                  href="#/find-inquiry"
+                  v-if="lastVisitorConversation"
+                  :href="lastVisitorConversation"
                   class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-white/30 text-white font-semibold hover:bg-white/10 transition-colors"
                 >
-                  Reopen Inquiry
+                  Open Recent Inquiry
                 </a>
               </div>
             </div>
@@ -146,5 +148,12 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import MainLayout from '../../templates/MainLayout/MainLayout.vue'
+
+const lastVisitorConversation = ref('')
+
+onMounted(() => {
+  lastVisitorConversation.value = localStorage.getItem('lastVisitorConversation') || ''
+})
 </script>
