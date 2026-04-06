@@ -65,7 +65,7 @@
 
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
             <Heading :level="2" size="2xl" class="mb-4">
-              Demo Accounts
+              Login data of the user/admin accounts
             </Heading>
 
             <div class="space-y-4">

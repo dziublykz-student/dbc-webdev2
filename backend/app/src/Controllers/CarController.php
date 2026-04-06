@@ -31,7 +31,7 @@ class CarController extends Controller
             $cars = $this->carService->getAll($filters, $page, $limit);
             return $this->sendSuccessResponse($cars);
         } catch (\Exception $e) {
-            return $this->sendErrorResponse('Internal server error', 500);
+            return $this->sendErrorResponse($e->getMessage() ?? 'Internal server error', 500);
         }
     }
 
@@ -47,47 +47,35 @@ class CarController extends Controller
 
             return $this->sendSuccessResponse($car);
         } catch (\Exception $e) {
-            return $this->sendErrorResponse('Internal server error', 500);
+            return $this->sendErrorResponse($e->getMessage() ?? 'Internal server error', 500);
         }
     }
 
     public function create()
     {
         try {
-            $user = $this->requireAdmin();
-
-            if (!$user) {
-                return $this->sendErrorResponse('Forbidden: admin access required', 403);
-            }
+            $this->requireAdmin();
 
             $data = json_decode(file_get_contents('php://input'), true);
-
-            if (!$this->carService->isValidCarData($data)) {
-                return $this->sendErrorResponse('Invalid car data', 400);
-            }
+            $this->carService->validateCarData($data); // throws exception if invalid
 
             $car = $this->carService->create($data);
             return $this->sendSuccessResponse($car, 201);
+        } catch (\InvalidArgumentException $e) {
+            return $this->sendErrorResponse($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return $this->sendErrorResponse('Internal server error', 500);
+            return $this->sendErrorResponse($e->getMessage() ?? 'Internal server error', 500);
         }
     }
 
     public function update($vars = [])
     {
         try {
-            $user = $this->requireAdmin();
-
-            if (!$user) {
-                return $this->sendErrorResponse('Forbidden: admin access required', 403);
-            }
+            $this->requireAdmin();
 
             $id = (int)($vars['id'] ?? 0);
             $data = json_decode(file_get_contents('php://input'), true);
-
-            if (!$this->carService->isValidCarData($data)) {
-                return $this->sendErrorResponse('Invalid car data', 400);
-            }
+            $this->carService->validateCarData($data); 
 
             $car = $this->carService->update($id, $data);
 
@@ -96,19 +84,17 @@ class CarController extends Controller
             }
 
             return $this->sendSuccessResponse($car);
+        } catch (\InvalidArgumentException $e) {
+            return $this->sendErrorResponse($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return $this->sendErrorResponse('Internal server error', 500);
+            return $this->sendErrorResponse($e->getMessage() ?? 'Internal server error', 500);
         }
     }
 
     public function delete($vars = [])
     {
         try {
-            $user = $this->requireAdmin();
-
-            if (!$user) {
-                return $this->sendErrorResponse('Forbidden: admin access required', 403);
-            }
+            $this->requireAdmin();
 
             $id = (int)($vars['id'] ?? 0);
             $deleted = $this->carService->delete($id);
@@ -119,7 +105,7 @@ class CarController extends Controller
 
             return $this->sendSuccessResponse(['message' => 'Car deleted successfully']);
         } catch (\Exception $e) {
-            return $this->sendErrorResponse('Internal server error', 500);
+            return $this->sendErrorResponse($e->getMessage() ?? 'Internal server error', 500);
         }
     }
 

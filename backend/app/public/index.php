@@ -36,29 +36,22 @@ use function FastRoute\simpleDispatcher;
  * Define the routes for the application.
  */
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
-    // Article routes
-    $r->addRoute('GET', '/articles', ['App\Controllers\ArticleController', 'getAll']);
-    $r->addRoute('GET', '/articles/{id}', ['App\Controllers\ArticleController', 'get']);
-
+    // Car routes
     $r->addRoute('GET', '/cars', ['App\Controllers\CarController', 'getAll']);
     $r->addRoute('GET', '/cars/{id:\d+}', ['App\Controllers\CarController', 'get']);
-
     $r->addRoute('POST', '/cars', ['App\Controllers\CarController', 'create']);
     $r->addRoute('PUT', '/cars/{id:\d+}', ['App\Controllers\CarController', 'update']);
     $r->addRoute('DELETE', '/cars/{id:\d+}', ['App\Controllers\CarController', 'delete']);
 
-    $r->addRoute('POST', '/articles', ['App\Controllers\ArticleController', 'create']);
-    $r->addRoute('PUT', '/articles/{id}', ['App\Controllers\ArticleController', 'update']);
-    $r->addRoute('DELETE', '/articles/{id}', ['App\Controllers\ArticleController', 'delete']);
-
+    // Auth routes
     $r->addRoute('POST', '/auth/login', ['App\Controllers\AuthController', 'login']);
     $r->addRoute('GET', '/auth/me', ['App\Controllers\AuthController', 'me']);
 
+    // Inquiry routes
     $r->addRoute('GET', '/inquiries', ['App\Controllers\InquiryController', 'getAll']);
     $r->addRoute('POST', '/inquiries', ['App\Controllers\InquiryController', 'create']);
     $r->addRoute('PUT', '/inquiries/{id:\d+}', ['App\Controllers\InquiryController', 'update']);
     $r->addRoute('POST', '/inquiries/{id:\d+}/messages', ['App\Controllers\InquiryController', 'addCustomerMessage']);
-    $r->addRoute('POST', '/inquiries/{id:\d+}/view', ['App\Controllers\InquiryController', 'getOneForCustomer']);
     $r->addRoute('GET', '/inquiries/{id:\d+}/view', ['App\Controllers\InquiryController', 'getOneForCustomer']);
     $r->addRoute('GET', '/inquiries/token/{token}', ['App\Controllers\InquiryController', 'getOneByToken']);
     $r->addRoute('POST', '/inquiries/token/{token}/messages', ['App\Controllers\InquiryController', 'addCustomerMessageByToken']);

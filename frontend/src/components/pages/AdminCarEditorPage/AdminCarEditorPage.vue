@@ -95,29 +95,6 @@ const getAuthHeaders = () => {
   }
 }
 
-const validateForm = () => {
-  const requiredFields = [
-    'brand',
-    'model',
-    'year',
-    'price',
-    'mileage',
-    'fuelType',
-    'transmission',
-    'status',
-    'imageUrl',
-    'description',
-  ]
-
-  for (const field of requiredFields) {
-    if (!form.value[field] || String(form.value[field]).trim() === '') {
-      return false
-    }
-  }
-
-  return true
-}
-
 const fetchCar = async () => {
   if (!isEditing.value) {
     loading.value = false
@@ -162,14 +139,7 @@ const saveCar = async () => {
   formError.value = ''
   formSuccess.value = ''
 
-  if (!validateForm()) {
-    formError.value = 'Please fill in all fields before saving the car.'
-    return
-  }
-
   try {
-    let response
-
     const payload = {
       brand: form.value.brand,
       model: form.value.model,
@@ -182,6 +152,8 @@ const saveCar = async () => {
       imageUrl: form.value.imageUrl,
       description: form.value.description,
     }
+
+    let response
 
     if (isEditing.value) {
       const carId = getCarIdFromHash()
@@ -198,25 +170,34 @@ const saveCar = async () => {
       })
     }
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Unauthorized. Please log in again.')
-      }
+    const text = await response.text()
+    let result = null
 
-      if (response.status === 403) {
-        throw new Error('Forbidden. Admin role required.')
-      }
-
-      throw new Error(`Failed to save car: ${response.status} ${response.statusText}`)
+    try {
+      result = JSON.parse(text)
+    } catch {
+      throw new Error(`Server did not return valid JSON. Response was: ${text.substring(0, 120)}`)
     }
 
+    if (!response.ok) {
+      throw new Error(result.error || result.message || `Failed to save car: ${response.status}`)
+    }
+
+    const savedCar = result.data ?? result
+
+    if (!savedCar || !savedCar.id) {
+      throw new Error('Car was not returned correctly by the server.')
+    }
+
+    console.log('Saved car response:', result)
+    
     formSuccess.value = isEditing.value
       ? 'Car updated successfully.'
       : 'Car created successfully.'
 
     setTimeout(() => {
       window.location.hash = '#/admin/cars'
-    }, 700)
+    }, 800)
   } catch (err) {
     console.error('Error saving car:', err)
     formError.value = err.message || 'Failed to save car.'
