@@ -1,84 +1,79 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Admin Inquiries</h1>
-          <p class="text-gray-600 mt-2">View customer interest messages for cars</p>
+  <MainLayout>
+    <section class="bg-gray-50 py-10">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+          <Heading :level="1" size="3xl" class="mb-2">
+            Admin Inquiries
+          </Heading>
+          <Text as="p" size="lg" color="muted">
+            View customer conversations and open a specific inquiry to reply.
+          </Text>
         </div>
-      </div>
 
-      <p v-if="globalError" class="mb-4 text-red-600 font-medium">
-        {{ globalError }}
-      </p>
+        <div class="flex flex-wrap gap-4 mb-8">
+          <a
+            href="#/admin/cars"
+            class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-800 hover:bg-gray-50 transition-colors"
+          >
+            Admin Cars
+          </a>
 
-      <div v-if="loading" class="text-center py-12 text-gray-600">
-        Loading inquiries...
-      </div>
+          <a
+            href="#/admin/inquiries"
+            class="px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors"
+          >
+            Admin Inquiries
+          </a>
+        </div>
 
-      <div v-else-if="error" class="text-center py-12 text-red-600">
-        {{ error }}
-      </div>
+        <LoadingState
+          v-if="loading"
+          message="Loading inquiries..."
+        />
 
-      <div v-else-if="inquiries.length === 0" class="bg-white rounded-xl shadow-md p-8 text-center text-gray-600">
-        No inquiries found.
-      </div>
+        <ErrorState
+          v-else-if="error"
+          title="Error Loading Inquiries"
+          :message="error"
+          button-text="Try Again"
+          @retry="fetchInquiries"
+        />
 
-      <div v-else class="space-y-4">
         <div
-          v-for="inquiry in inquiries"
-          :key="inquiry.id"
-          class="bg-white rounded-xl shadow-md p-6"
+          v-else-if="inquiries.length === 0"
+          class="bg-white rounded-2xl shadow-md border border-gray-100 text-center py-14 px-6"
         >
-          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
-            <div>
-              <h2 class="text-xl font-semibold text-gray-900">
-                Inquiry #{{ inquiry.id }}
-              </h2>
-              <p class="text-sm text-gray-600">
-                Car ID: {{ inquiry.carId }}
-              </p>
+          <Heading :level="3" size="lg" class="mb-2">No inquiries found</Heading>
+          <Text as="p" size="md" color="muted">
+            Customer messages will appear here.
+          </Text>
+        </div>
 
-              <p class="text-sm text-gray-600">
-                Car Brand: {{ inquiry.carBrand || 'Unknown' }}
-              </p>
-            </div>
-
-            <p class="text-sm text-gray-500">
-              {{ formatDate(inquiry.createdAt) }}
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm text-gray-700">
-            <div>
-              <strong>Name:</strong> {{ inquiry.name }}
-            </div>
-            <div>
-              <strong>Email:</strong> {{ inquiry.email }}
-            </div>
-          </div>
-
-          <div class="bg-gray-50 rounded-lg p-4 text-gray-800">
-            {{ inquiry.message }}
-          </div>
+        <div v-else class="space-y-4">
+          <InquiryListItem
+            v-for="inquiry in inquiries"
+            :key="inquiry.id"
+            :inquiry="inquiry"
+          />
         </div>
       </div>
-
-      <div class="mt-6 flex gap-4">
-        <a href="#/admin/cars" class="text-blue-600 hover:underline">← Back to Admin Cars</a>
-        <a href="#/" class="text-blue-600 hover:underline">Back to Inventory</a>
-      </div>
-    </div>
-  </div>
+    </section>
+  </MainLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import MainLayout from '../../templates/MainLayout/MainLayout.vue'
+import Heading from '../../atoms/Heading/Heading.vue'
+import Text from '../../atoms/Text/Text.vue'
+import LoadingState from '../../organisms/LoadingState/LoadingState.vue'
+import ErrorState from '../../organisms/ErrorState/ErrorState.vue'
+import InquiryListItem from '../../organisms/InquiryListItem/InquiryListItem.vue'
 
 const inquiries = ref([])
 const loading = ref(true)
 const error = ref(null)
-const globalError = ref('')
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token')
@@ -92,7 +87,6 @@ const getAuthHeaders = () => {
 const fetchInquiries = async () => {
   loading.value = true
   error.value = null
-  globalError.value = ''
 
   try {
     const response = await fetch('http://localhost/inquiries', {
@@ -120,14 +114,6 @@ const fetchInquiries = async () => {
     inquiries.value = []
   } finally {
     loading.value = false
-  }
-}
-
-const formatDate = (value) => {
-  try {
-    return new Date(value).toLocaleString()
-  } catch {
-    return value
   }
 }
 

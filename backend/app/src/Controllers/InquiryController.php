@@ -19,10 +19,10 @@ class InquiryController extends Controller
     public function getAll()
     {
         try {
-            $user = $this->requireAdmin();
+            $user = $this->requireStaff();
 
             if (!$user) {
-                return $this->sendErrorResponse('Forbidden: admin access required', 403);
+                return $this->sendErrorResponse('Forbidden: staff access required', 403);
             }
 
             $inquiries = $this->inquiryService->getAll();
@@ -48,6 +48,81 @@ class InquiryController extends Controller
         }
     }
 
+    public function update($vars = [])
+    {
+        try {
+            $user = $this->requireStaff();
+
+            if (!$user) {
+                return $this->sendErrorResponse('Forbidden: staff access required', 403);
+            }
+
+            $id = (int) ($vars['id'] ?? 0);
+            $data = json_decode(file_get_contents('php://input'), true);
+
+            if (!$this->inquiryService->isValidInquiryUpdateData($data)) {
+                return $this->sendErrorResponse('Invalid inquiry update data', 400);
+            }
+
+            $inquiry = $this->inquiryService->update($id, $data);
+
+            if (!$inquiry) {
+                return $this->sendErrorResponse('Inquiry not found', 404);
+            }
+
+            return $this->sendSuccessResponse($inquiry);
+        } catch (\Exception $e) {
+            return $this->sendErrorResponse('Internal server error', 500);
+        }
+    }
+
+    public function getOneByToken($vars = [])
+    {
+        try {
+            $token = (string) ($vars['token'] ?? '');
+
+            if (trim($token) === '') {
+                return $this->sendErrorResponse('Invalid inquiry token', 400);
+            }
+
+            $inquiry = $this->inquiryService->getByPublicToken($token);
+
+            if (!$inquiry) {
+                return $this->sendErrorResponse('Inquiry not found', 404);
+            }
+
+            return $this->sendSuccessResponse($inquiry);
+        } catch (\Exception $e) {
+            return $this->sendErrorResponse('Internal server error', 500);
+        }
+    }
+
+    public function addCustomerMessageByToken($vars = [])
+    {
+        try {
+            $token = (string) ($vars['token'] ?? '');
+            $data = json_decode(file_get_contents('php://input'), true);
+
+            if (trim($token) === '') {
+                return $this->sendErrorResponse('Invalid inquiry token', 400);
+            }
+
+            if (!$this->inquiryService->isValidCustomerFollowUpData($data)) {
+                return $this->sendErrorResponse('Invalid follow-up data', 400);
+            }
+
+            $inquiry = $this->inquiryService->addCustomerMessageByToken($token, $data);
+
+            if (!$inquiry) {
+                return $this->sendErrorResponse('Inquiry not found', 404);
+            }
+
+            return $this->sendSuccessResponse($inquiry);
+        } catch (\Exception $e) {
+            return $this->sendErrorResponse('Internal server error', 500);
+        }
+    }
+
     private function requireAuth(): ?array
     {
         $token = JwtHelper::getBearerToken();
@@ -65,7 +140,7 @@ class InquiryController extends Controller
         return (array) $decoded['data'];
     }
 
-    private function requireAdmin(): ?array
+    private function requireStaff(): ?array
     {
         $user = $this->requireAuth();
 
@@ -73,7 +148,9 @@ class InquiryController extends Controller
             return null;
         }
 
-        if (($user['role'] ?? '') !== 'admin') {
+        $role = $user['role'] ?? '';
+
+        if (!in_array($role, ['admin', 'employee'], true)) {
             return null;
         }
 

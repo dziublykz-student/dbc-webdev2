@@ -1,59 +1,71 @@
 <template>
-  <div>
-    <div v-if="loading" class="min-h-screen flex items-center justify-center">
-      <div class="text-center">
-        <div
-          class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"
-        ></div>
-        <p class="text-gray-600">Loading cars...</p>
-      </div>
-    </div>
+  <MainLayout>
+    <section class="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="max-w-3xl">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400 mb-3">
+            Inventory
+          </p>
 
-    <div
-      v-else-if="error"
-      class="min-h-screen flex items-center justify-center"
-    >
-      <div class="text-center max-w-md">
-        <div class="text-red-600 text-5xl mb-4">⚠️</div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">
-          Error Loading Cars
-        </h2>
-        <p class="text-gray-600 mb-4">{{ error }}</p>
-        <button
-          @click="fetchCars"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Try Again
-        </button>
-      </div>
-    </div>
+          <Heading :level="1" size="3xl" class="mb-4">
+            Explore our available cars
+          </Heading>
 
-    <CarInventory
-      v-else
-      :articles="mappedCars"
-      :filters="filters"
-      @update:filters="filters = $event"
-      @apply-filters="applyFilters"
-      @reset-filters="resetFilters"
-      @article-click="handleCarClick"
-    />
-  </div>
+          <p class="text-lg text-gray-300 leading-8 max-w-3xl">
+            Browse our current stock, filter by brand, fuel type, or status,
+            and open any car to view more details or send an inquiry.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-10 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LoadingState
+          v-if="loading"
+          message="Loading cars..."
+        />
+
+        <ErrorState
+          v-else-if="error"
+          title="Error Loading Cars"
+          :message="error"
+          button-text="Try Again"
+          @retry="fetchCars"
+        />
+
+        <CarInventory
+          v-else
+          :articles="mappedCars"
+          :filters="filters"
+          @update:filters="filters = $event"
+          @apply-filters="applyFilters"
+          @reset-filters="resetFilters"
+          @article-click="handleCarClick"
+        />
+      </div>
+    </section>
+  </MainLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import CarInventory from "../../templates/CarInventory/CarInventory.vue";
-import { get } from "../../../utils/api.js";
+import { ref, computed, onMounted } from 'vue'
+import { get } from '../../../utils/api.js'
+import MainLayout from '../../templates/MainLayout/MainLayout.vue'
+import CarInventory from '../../templates/CarInventory/CarInventory.vue'
+import LoadingState from '../../organisms/LoadingState/LoadingState.vue'
+import ErrorState from '../../organisms/ErrorState/ErrorState.vue'
+import Heading from '../../atoms/Heading/Heading.vue'
 
-const cars = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const cars = ref([])
+const loading = ref(true)
+const error = ref(null)
 
 const filters = ref({
   brand: '',
   fuelType: '',
   status: '',
-});
+})
 
 const mappedCars = computed(() =>
   cars.value.map((car) => ({
@@ -68,75 +80,54 @@ const mappedCars = computed(() =>
     price: `€${Number(car.price).toLocaleString()}`,
     imageUrl: car.imageUrl,
   })),
-);
+)
 
 const buildQueryString = () => {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams()
 
-  if (filters.value.brand.trim()) {
-    params.append('brand', filters.value.brand.trim());
-  }
+  if (filters.value.brand.trim()) params.append('brand', filters.value.brand.trim())
+  if (filters.value.fuelType) params.append('fuelType', filters.value.fuelType)
+  if (filters.value.status) params.append('status', filters.value.status)
 
-  if (filters.value.fuelType) {
-    params.append('fuelType', filters.value.fuelType);
-  }
+  params.append('page', '1')
+  params.append('limit', '12')
 
-  if (filters.value.status) {
-    params.append('status', filters.value.status);
-  }
-
-  params.append('page', '1');
-  params.append('limit', '12');
-
-  return params.toString();
-};
+  return params.toString()
+}
 
 const fetchCars = async () => {
-  loading.value = true;
-  error.value = null;
+  loading.value = true
+  error.value = null
 
   try {
-    const query = buildQueryString();
-    const endpoint = query ? `/cars?${query}` : '/cars';
-
-    const response = await get(endpoint);
+    const query = buildQueryString()
+    const endpoint = query ? `/cars?${query}` : '/cars'
+    const response = await get(endpoint)
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to fetch cars: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`Failed to fetch cars: ${response.status} ${response.statusText}`)
     }
 
-    const result = await response.json();
-    cars.value = Array.isArray(result) ? result : (result.data?.data ?? result.data ?? []);
+    const result = await response.json()
+    cars.value = Array.isArray(result) ? result : (result.data?.data ?? result.data ?? [])
   } catch (err) {
-    console.error("Error fetching cars:", err);
-    error.value =
-      err.message || "Failed to load cars. Please try again later.";
-    cars.value = [];
+    error.value = err.message || 'Failed to load cars.'
+    cars.value = []
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-const applyFilters = () => {
-  fetchCars();
-};
+const applyFilters = () => fetchCars()
 
 const resetFilters = () => {
-  filters.value = {
-    brand: '',
-    fuelType: '',
-    status: '',
-  };
-  fetchCars();
-};
+  filters.value = { brand: '', fuelType: '', status: '' }
+  fetchCars()
+}
 
 const handleCarClick = (carId) => {
-  window.location.hash = `#/cars/${carId}`;
-};
+  window.location.hash = `#/cars/${carId}`
+}
 
-onMounted(() => {
-  fetchCars();
-});
+onMounted(fetchCars)
 </script>

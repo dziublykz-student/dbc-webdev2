@@ -1,50 +1,105 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-    <div class="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
-      <Heading :level="1" size="3xl" class="mb-2">Login</Heading>
-      <p class="text-gray-600 mb-6">Sign in to manage dealership inventory</p>
+  <MainLayout>
+    <section class="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div class="max-w-3xl">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400 mb-3">
+            Staff Login
+          </p>
 
-      <p v-if="error" class="mb-4 text-red-600 font-medium">
-        {{ error }}
-      </p>
+          <Heading :level="1" size="3xl" class="mb-4">
+            Sign in to manage the dealership
+          </Heading>
 
-      <form class="space-y-4">
-        <input
-          v-model="email"
-          type="email"
-          placeholder="Email"
-          class="w-full border rounded-lg px-4 py-2"
-        />
-
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Password"
-          class="w-full border rounded-lg px-4 py-2"
-        />
-
-        <div class="w-full" @click="login">
-          <Button label="Login" primary size="medium" />
+          <p class="text-lg text-gray-300 leading-8">
+            Admins and employees can access inventory management and inquiry handling
+            from the staff dashboard.
+          </p>
         </div>
-      </form>
-
-      <div class="mt-6 text-sm text-gray-600">
-        <p><strong>Admin:</strong> admin@dbcauto.nl / password123</p>
-        <p><strong>Employee:</strong> employee@dbcauto.nl / password123</p>
       </div>
+    </section>
 
-      <div class="mt-6">
-        <a href="#/" class="text-blue-600 hover:underline">← Back to Inventory</a>
+    <section class="bg-gray-50 py-12">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+            <Heading :level="2" size="2xl" class="mb-2">Login</Heading>
+
+            <Text as="p" size="md" color="muted" class="mb-6">
+              Sign in to manage dealership inventory and respond to inquiries.
+            </Text>
+
+            <p v-if="error" class="mb-4 text-red-600 font-medium">
+              {{ error }}
+            </p>
+
+            <form class="space-y-4" @submit.prevent="login">
+              <input
+                v-model="email"
+                type="email"
+                placeholder="Email"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <input
+                v-model="password"
+                type="password"
+                placeholder="Password"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <button
+                type="submit"
+                class="w-full px-5 py-3 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium"
+              >
+                Login
+              </button>
+            </form>
+
+            <div class="mt-6">
+              <a href="#/cars" class="text-blue-600 hover:underline">
+                ← Back to Inventory
+              </a>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+            <Heading :level="2" size="2xl" class="mb-4">
+              Demo Accounts
+            </Heading>
+
+            <div class="space-y-4">
+              <div class="rounded-2xl bg-gray-50 border border-gray-100 p-5">
+                <p class="text-sm text-gray-500 mb-1">Admin</p>
+                <p class="text-gray-900 font-semibold">admin@dbcauto.nl</p>
+                <p class="text-gray-700">password123</p>
+              </div>
+
+              <div class="rounded-2xl bg-gray-50 border border-gray-100 p-5">
+                <p class="text-sm text-gray-500 mb-1">Employee</p>
+                <p class="text-gray-900 font-semibold">employee@dbcauto.nl</p>
+                <p class="text-gray-700">password123</p>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <Text as="p" size="md" color="muted">
+                Admins can manage cars and inquiries. Employees can access inquiry handling.
+              </Text>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </MainLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { post } from '../../../utils/api.js'
-import Button from '../../atoms/Button/Button.vue'
+import MainLayout from '../../templates/MainLayout/MainLayout.vue'
 import Heading from '../../atoms/Heading/Heading.vue'
+import Text from '../../atoms/Text/Text.vue'
 
 const email = ref('')
 const password = ref('')

@@ -1,55 +1,35 @@
 <template>
-  <footer class="bg-black border-t border-gray-200 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <!-- Brand section -->
-        <div class="col-span-1 md:col-span-2">
-          <Heading :level="3" size="lg" class="mb-4">
-            DBC Auto
-          </Heading>
-          <Text as="p" size="sm" color="muted" class="mb-4">
-            Browse quality dealership cars with clear details, pricing, and availability.
-          </Text>
-          <div class="flex space-x-4">
-            <a 
-              v-for="social in socialLinks" 
-              :key="social.name"
-              :href="social.href" 
-              class="text-white hover:text-blue-600 transition-colors"
-              :aria-label="social.name"
-            >
-              <component :is="social.icon" class="h-5 w-5" />
-            </a>
-          </div>
-        </div>
-        
-        <!-- Quick Links -->
+  <footer class="bg-black text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
-          <Heading :level="4" size="md" class="mb-4">
-            Quick Links
-          </Heading>
+          <h3 class="text-xl font-bold mb-3">DBC Auto</h3>
+          <p class="text-gray-300">
+            Browse quality dealership cars, send inquiries, and stay in touch with our team.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Quick Links</h4>
           <ul class="space-y-2">
             <li v-for="link in quickLinks" :key="link.name">
-              <a 
-                :href="link.href" 
-                class="text-white hover:text-blue-600 transition-colors text-sm"
+              <a
+                :href="link.href"
+                class="text-gray-300 hover:text-white transition-colors"
               >
                 {{ link.name }}
               </a>
             </li>
           </ul>
         </div>
-        
-        <!-- Legal -->
+
         <div>
-          <Heading :level="4" size="md" class="mb-4">
-            Legal
-          </Heading>
+          <h4 class="text-lg font-semibold mb-3">Legal</h4>
           <ul class="space-y-2">
             <li v-for="link in legalLinks" :key="link.name">
-              <a 
-                :href="link.href" 
-                class="text-white hover:text-blue-600 transition-colors text-sm"
+              <a
+                :href="link.href"
+                class="text-gray-300 hover:text-white transition-colors"
               >
                 {{ link.name }}
               </a>
@@ -57,44 +37,23 @@
           </ul>
         </div>
       </div>
-      
-      <div class="mt-8 pt-8 border-t border-gray-200">
-        <Text as="p" size="sm" color="muted" class="text-center">
+
+      <div class="border-t border-gray-800 mt-8 pt-6 text-sm text-gray-400 text-center">
           © {{ currentYear }} DBC Auto. All rights reserved.
-        </Text>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import Heading from '../../atoms/Heading/Heading.vue';
-import Text from '../../atoms/Text/Text.vue';
-
 defineProps({
   quickLinks: {
     type: Array,
-    default: () => [
-      { name: 'Home', href: '/' },
-      { name: 'Articles', href: '/articles' },
-      { name: 'Categories', href: '/categories' },
-      { name: 'About', href: '/about' },
-    ],
+    default: () => [],
   },
   legalLinks: {
     type: Array,
-    default: () => [
-      { name: 'Privacy Policy', href: '/privacy' },
-      { name: 'Terms of Service', href: '/terms' },
-      { name: 'Cookie Policy', href: '/cookies' },
-    ],
-  },
-  socialLinks: {
-    type: Array,
     default: () => [],
   },
-});
-
-const currentYear = computed(() => new Date().getFullYear());
+})
 </script>

@@ -56,6 +56,12 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     $r->addRoute('GET', '/inquiries', ['App\Controllers\InquiryController', 'getAll']);
     $r->addRoute('POST', '/inquiries', ['App\Controllers\InquiryController', 'create']);
+    $r->addRoute('PUT', '/inquiries/{id:\d+}', ['App\Controllers\InquiryController', 'update']);
+    $r->addRoute('POST', '/inquiries/{id:\d+}/messages', ['App\Controllers\InquiryController', 'addCustomerMessage']);
+    $r->addRoute('POST', '/inquiries/{id:\d+}/view', ['App\Controllers\InquiryController', 'getOneForCustomer']);
+    $r->addRoute('GET', '/inquiries/{id:\d+}/view', ['App\Controllers\InquiryController', 'getOneForCustomer']);
+    $r->addRoute('GET', '/inquiries/token/{token}', ['App\Controllers\InquiryController', 'getOneByToken']);
+    $r->addRoute('POST', '/inquiries/token/{token}/messages', ['App\Controllers\InquiryController', 'addCustomerMessageByToken']);
 });
 
 
