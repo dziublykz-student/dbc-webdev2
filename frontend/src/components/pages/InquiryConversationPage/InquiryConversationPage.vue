@@ -1,48 +1,69 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <a href="#/" class="text-blue-600 hover:underline mb-6 inline-block">
-        ← Back to Inventory
-      </a>
+  <LoadingState
+    v-if="loading"
+    message="Loading conversation..."
+  />
 
-      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          Your inquiry conversation
-        </h1>
-        <p class="text-gray-600">
-          Continue your conversation with the dealership here.
-        </p>
+  <ErrorState
+    v-else-if="error"
+    title="Unable to Load Conversation"
+    :message="error"
+    button-text="Back to Inventory"
+    @retry="goBack"
+  />
+
+  <MainLayout v-else-if="conversation">
+    <section class="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="max-w-3xl">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-400 mb-3">
+            Inquiry Conversation
+          </p>
+
+          <Heading :level="1" size="3xl" class="mb-4">
+            Stay in touch with the dealership
+          </Heading>
+
+          <p class="text-lg text-gray-300 leading-8">
+            Use your inquiry ID and email to reopen this conversation and continue
+            discussing the car with the dealership team.
+          </p>
+        </div>
+
+        <a
+          href="#/cars"
+          class="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium mb-6"
+        >
+          ← Back to Inventory
+        </a>
       </div>
+    </section>
 
-      <div v-if="loading" class="text-center py-12 text-gray-600">
-        Loading conversation...
-      </div>
-
-      <div v-else-if="error" class="bg-white rounded-xl shadow-md p-6 text-red-600">
-        {{ error }}
-      </div>
-
-      <template v-else-if="conversation">
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-6">
+    <section class="py-10 bg-gray-50">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 mb-8">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
             <div>
-              <h2 class="text-xl font-semibold text-gray-900">
+              <Heading :level="2" size="2xl" class="mb-2">
                 Inquiry #{{ conversation.id }}
-              </h2>
-              <p class="text-sm text-gray-600 mt-2">
+              </Heading>
+
+              <Text as="p" size="sm" color="muted" class="mb-2">
                 Save this inquiry ID: <strong>{{ conversation.id }}</strong>
-              </p>
-              <p class="text-sm text-gray-600">
+              </Text>
+
+              <Text as="p" size="sm" color="muted">
                 {{ conversation.name }} • {{ conversation.email }}
-              </p>
+              </Text>
             </div>
 
-            <div class="text-right">
-              <p class="text-sm text-gray-500 mb-1">
+            <div class="text-left md:text-right">
+              <Text as="p" size="sm" color="muted" class="mb-2">
                 {{ formatDate(conversation.createdAt) }}
-              </p>
+              </Text>
+
               <span
-                class="text-xs font-semibold px-2 py-1 rounded-full"
+                class="text-xs font-semibold px-3 py-1 rounded-full"
                 :class="conversation.status === 'handled'
                   ? 'bg-green-100 text-green-700'
                   : 'bg-yellow-100 text-yellow-700'"
@@ -52,7 +73,7 @@
             </div>
           </div>
 
-          <div class="space-y-3">
+          <div class="space-y-4">
             <div
               v-for="message in conversation.messages"
               :key="message.id"
@@ -60,19 +81,21 @@
               :class="message.senderType === 'admin' ? 'justify-end' : 'justify-start'"
             >
               <div
-                class="max-w-[75%] rounded-2xl px-4 py-3 shadow-sm"
+                class="max-w-[80%] rounded-2xl px-5 py-4 shadow-sm"
                 :class="message.senderType === 'admin'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-900'"
+                  : 'bg-gray-100 text-gray-900 border border-gray-200'"
               >
-                <div class="text-xs opacity-80 mb-1 font-semibold">
+                <div class="text-xs font-semibold opacity-80 mb-2">
                   {{ message.senderType === 'admin' ? 'Dealership' : 'You' }}
                 </div>
-                <div class="whitespace-pre-wrap break-words">
+
+                <div class="whitespace-pre-wrap break-words leading-7">
                   {{ message.message }}
                 </div>
+
                 <div
-                  class="text-[11px] mt-2"
+                  class="text-[11px] mt-3"
                   :class="message.senderType === 'admin' ? 'text-blue-100' : 'text-gray-500'"
                 >
                   {{ formatDate(message.createdAt) }}
@@ -82,10 +105,16 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            Send a follow-up
-          </h2>
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+          <div class="mb-6">
+            <Heading :level="2" size="2xl" class="mb-2">
+              Send a follow-up
+            </Heading>
+
+            <Text as="p" size="md" color="muted">
+              Continue the conversation using the same email address.
+            </Text>
+          </div>
 
           <p v-if="followUpError" class="mb-4 text-red-600 font-medium">
             {{ followUpError }}
@@ -100,42 +129,37 @@
               v-model="email"
               type="email"
               placeholder="Your email"
-              class="w-full border rounded-lg px-4 py-2"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <textarea
               v-model="followUpMessage"
               placeholder="Write your follow-up message"
-              class="w-full border rounded-lg px-4 py-2"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows="5"
             ></textarea>
 
             <button
               type="submit"
-              class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors"
+              class="px-5 py-3 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium"
             >
               Send Follow-up
             </button>
           </form>
         </div>
-
-        <div class="bg-white rounded-xl shadow-md p-6">
-          <a
-            v-if="lastVisitorConversation"
-            :href="lastVisitorConversation"
-            class="text-blue-600 hover:underline"
-          >
-            Refresh / reopen this conversation later
-          </a>
-        </div>
-      </template>
-    </div>
-  </div>
+      </div>
+    </section>
+  </MainLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { get, post } from '../../../utils/api.js'
+import MainLayout from '../../templates/MainLayout/MainLayout.vue'
+import LoadingState from '../../organisms/LoadingState/LoadingState.vue'
+import ErrorState from '../../organisms/ErrorState/ErrorState.vue'
+import Heading from '../../atoms/Heading/Heading.vue'
+import Text from '../../atoms/Text/Text.vue'
 
 const conversation = ref(null)
 const loading = ref(true)
@@ -144,7 +168,6 @@ const email = ref('')
 const followUpMessage = ref('')
 const followUpError = ref('')
 const followUpSuccess = ref('')
-const lastVisitorConversation = ref('')
 
 const getInquiryIdFromHash = () => {
   const hashWithoutQuery = window.location.hash.split('?')[0]
@@ -157,6 +180,10 @@ const getEmailFromHash = () => {
   const queryString = hash.includes('?') ? hash.split('?')[1] : ''
   const params = new URLSearchParams(queryString)
   return params.get('email') || ''
+}
+
+const goBack = () => {
+  window.location.hash = '#/cars'
 }
 
 const fetchConversation = async () => {
@@ -238,8 +265,6 @@ const formatDate = (value) => {
 
 onMounted(async () => {
   email.value = decodeURIComponent(getEmailFromHash())
-  lastVisitorConversation.value = window.location.hash
-  localStorage.setItem('lastVisitorConversation', window.location.hash)
   await fetchConversation()
 })
 </script>
