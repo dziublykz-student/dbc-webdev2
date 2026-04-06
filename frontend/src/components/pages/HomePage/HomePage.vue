@@ -109,7 +109,7 @@
 
     <section class="pb-20 bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="rounded-3xl overflow-hidden shadow-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+        <div class="rounded-3xl overflow-hidden shadow-xl bg-gradient-to-r from-blue-800 to-blue-900 text-white">
           <div class="px-8 py-12 md:px-12 md:py-14">
             <div class="max-w-3xl">
               <p class="text-sm font-semibold uppercase tracking-[0.18em] text-blue-100 mb-3">

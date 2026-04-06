@@ -22,20 +22,6 @@
             </li>
           </ul>
         </div>
-
-        <div>
-          <h4 class="text-lg font-semibold mb-3">Legal</h4>
-          <ul class="space-y-2">
-            <li v-for="link in legalLinks" :key="link.name">
-              <a
-                :href="link.href"
-                class="text-gray-300 hover:text-white transition-colors"
-              >
-                {{ link.name }}
-              </a>
-            </li>
-          </ul>
-        </div>
       </div>
 
       <div class="border-t border-gray-800 mt-8 pt-6 text-sm text-gray-400 text-center">
@@ -48,10 +34,6 @@
 <script setup>
 defineProps({
   quickLinks: {
-    type: Array,
-    default: () => [],
-  },
-  legalLinks: {
     type: Array,
     default: () => [],
   },

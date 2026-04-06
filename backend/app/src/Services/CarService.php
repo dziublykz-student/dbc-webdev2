@@ -43,45 +43,19 @@ class CarService implements ICarService
 
     public function create(array $data): Car
     {
+        $this->validateCarData($data);
         return $this->carRepository->create($data);
     }
 
     public function update(int $id, array $data): ?Car
     {
+        $this->validateCarData($data);
         return $this->carRepository->update($id, $data);
     }
 
     public function delete(int $id): bool
     {
         return $this->carRepository->delete($id);
-    }
-
-    public function isValidCarData(?array $data): bool
-    {
-        if (!$data) {
-            return false;
-        }
-
-        $requiredFields = [
-            'brand',
-            'model',
-            'year',
-            'price',
-            'mileage',
-            'fuelType',
-            'transmission',
-            'status',
-            'imageUrl',
-            'description',
-        ];
-
-        foreach ($requiredFields as $field) {
-            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private function prepareFilters(array $filters): array
@@ -113,5 +87,49 @@ class CarService implements ICarService
         }
 
         return $prepared;
+    }
+
+    public function validateCarData(array $data): void
+    {
+        $year = (int)($data['year'] ?? 0);
+        $price = (float)($data['price'] ?? -1);
+        $mileage = (int)($data['mileage'] ?? -1);
+        $status = $data['status'] ?? '';
+        $fuelType = $data['fuelType'] ?? '';
+        $allowedFuelTypes = ['Petrol', 'Diesel', 'Electric', 'Hybrid'];
+        $allowedStatuses = ['Available', 'Sold'];
+        $transmission = trim((string) ($data['transmission'] ?? ''));
+        $allowedTransmissions = ['Manual', 'Automatic'];
+
+        if ($year < 1965 || $year > (int)date('Y')) {
+            throw new \InvalidArgumentException('Year must be between 1965 and current year.');
+        }
+
+        if ($price < 0) {
+            throw new \InvalidArgumentException('Price must be positive.');
+        }
+
+        if ($mileage < 0) {
+            throw new \InvalidArgumentException('Mileage must be positive.');
+        }
+
+        if (!in_array($fuelType, $allowedFuelTypes, true)) {
+            throw new \InvalidArgumentException('Invalid fuel type.');
+        }
+        
+        if (!in_array($transmission, $allowedTransmissions, true)) {
+            throw new \InvalidArgumentException('Invalid transmission.');
+        }
+
+        if (!in_array($status, $allowedStatuses, true)) {
+            throw new \InvalidArgumentException('Invalid status value.');
+        }
+
+        $requiredFields = ['brand','model','fuelType','transmission','imageUrl','description'];
+        foreach ($requiredFields as $field) {
+            if (empty($data[$field]) || trim((string)$data[$field]) === '') {
+                throw new \InvalidArgumentException("$field is required.");
+            }
+        }
     }
 }
